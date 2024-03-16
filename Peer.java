@@ -10,6 +10,7 @@ public class Peer {
     private String hostName;
     private String port;
     private boolean hasFile;
+    private fileLoader;
     //Need to add bitfield here
     //also need a peerlist so that these clients can then connect to the servers that we already have listed
 
