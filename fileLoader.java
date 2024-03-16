@@ -1,6 +1,9 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Scanner;
+import java.io.BufferedReader;
 
 public class fileLoader {
     int numNeighbors;
@@ -14,7 +17,7 @@ public class fileLoader {
 
 
     public void loadCommon(){
-        int index = 0;
+       // int index = 0;
         File commonCFG = new File ("Common.cfg");
        
         try (Scanner myScanner = new Scanner(commonCFG)) {
@@ -60,6 +63,23 @@ public class fileLoader {
       
 
         }
+
+    public void loadpeerInfo(){
+        File peerInfo = new File ("PeerInfo.cfg");//https://stackoverflow.com/questions/13405822/using-bufferedreader-readline-in-a-while-loop-properly
+        try (BufferedReader br = new BufferedReader(new FileReader(peerInfo))) {
+            String line;
+            try {
+                while((line = br.readLine()) != null){ 
+
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
 
     }
 
