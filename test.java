@@ -4,6 +4,7 @@ public class test {
         fileLoader loader = new fileLoader();
 
         loader.loadCommon();
+        loader.loadpeerInfo();
 
         System.out.println("Number of Preferred Neighbors: " + loader.numNeighbors);
         System.out.println("Unchoking Interval: " + loader.unchokeInterval);
@@ -11,6 +12,11 @@ public class test {
         System.out.println("File Name: " + loader.fileName);
         System.out.println("File Size: " + loader.fileSize);
         System.out.println("Piece Size: " + loader.pieceSize);
+
+        for (Integer peerID : loader.peersinNetwork.keySet()) {
+            Peer peer = loader.peersinNetwork.get(peerID);
+            System.out.println("Peer ID: " + peerID + ", Peer details: " + peer);
+        }
     }
 }
 

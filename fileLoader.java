@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Scanner;
 import java.io.BufferedReader;
 
@@ -12,6 +13,11 @@ public class fileLoader {
     String fileName;
     int fileSize;
     int pieceSize;
+    HashMap<Integer, Peer> peersinNetwork;
+
+    public fileLoader(){
+        this.peersinNetwork = new HashMap<>();
+    }
     //going to be creating functions here to load common.cfg and peerinfo.cfg
 
 
@@ -70,6 +76,15 @@ public class fileLoader {
             String line;
             try {
                 while((line = br.readLine()) != null){ 
+                    String[] parts = line.split(" ");
+                    if(parts.length == 4){
+                        int peerID = Integer.parseInt(parts[0]);
+                        String hostName = parts[1];
+                        String port = parts[2];
+                        int hasFile = Integer.parseInt(parts[3]);
+                        this.peersinNetwork.put(peerID, new Peer(peerID, hostName, port, hasFile));
+
+                    }
 
                 }
             } catch (IOException e) {
