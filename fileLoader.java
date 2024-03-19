@@ -25,16 +25,14 @@ public class fileLoader {
 
     public void loadCommon(){
        // int index = 0;
-       System.out.println("THIS IS BEFORE I READ THE FILE");
         File commonCFG = new File ("Common.cfg");
-        System.out.println("DID I MAKE IT HERE DID THIS WORK");
+
 
         try (Scanner myScanner = new Scanner(commonCFG)) {
             while (myScanner.hasNextLine()){
                 String fileData = myScanner.nextLine();
                 String[] fileSplit = fileData.split(" ");
                 if(fileSplit.length !=2){
-                    System.out.println("DID I MAKE IT HERE DID THIS WORK");
 
                     throw new IllegalArgumentException("Invalid format in the .cfg file");
                 }
@@ -58,7 +56,6 @@ public class fileLoader {
                         this.fileSize = Integer.parseInt(value);
                         break;
                     case "PieceSize":
-                        System.out.println("DID I MAKE IT HERE DID THIS WORK");
                         this.pieceSize = Integer.parseInt(value);
                         break;
                     //default:
@@ -138,7 +135,7 @@ public class fileLoader {
     }
 
 
-    
+
     }
 
 

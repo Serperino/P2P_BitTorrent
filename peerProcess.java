@@ -29,9 +29,7 @@ public class peerProcess {
         else{
             fileLoader loader = new fileLoader();
             //Loads information from common.cfg and peer.info
-            System.out.println("WHY DONT U  WORK");
             configInfo.loadCommon();
-            System.out.println("WHY DONT U  WORK");
             //This specifically contains the map of the peers
             configInfo.loadpeerInfo();
              Integer inputID = Integer.parseInt(args[0]);
