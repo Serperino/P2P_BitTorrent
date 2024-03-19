@@ -3,18 +3,19 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 import java.io.BufferedReader;
 
 public class fileLoader {
-    int numNeighbors;
-    int unchokeInterval;
-    int optimisticInterval;
-    String fileName;
-    int fileSize;
-    int pieceSize;
-    HashMap<Integer, Peer> peersinNetwork;
-
+    private int numNeighbors;
+    private int unchokeInterval;
+    private int optimisticInterval;
+    private String fileName;
+    private int fileSize;
+    private int pieceSize;
+    private HashMap<Integer, Peer> peersinNetwork;
+    
     public fileLoader(){
         this.peersinNetwork = new HashMap<>();
     }
@@ -24,13 +25,17 @@ public class fileLoader {
 
     public void loadCommon(){
        // int index = 0;
+       System.out.println("THIS IS BEFORE I READ THE FILE");
         File commonCFG = new File ("Common.cfg");
-       
+        System.out.println("DID I MAKE IT HERE DID THIS WORK");
+
         try (Scanner myScanner = new Scanner(commonCFG)) {
             while (myScanner.hasNextLine()){
                 String fileData = myScanner.nextLine();
                 String[] fileSplit = fileData.split(" ");
                 if(fileSplit.length !=2){
+                    System.out.println("DID I MAKE IT HERE DID THIS WORK");
+
                     throw new IllegalArgumentException("Invalid format in the .cfg file");
                 }
                 String label = fileSplit[0];
@@ -53,6 +58,7 @@ public class fileLoader {
                         this.fileSize = Integer.parseInt(value);
                         break;
                     case "PieceSize":
+                        System.out.println("DID I MAKE IT HERE DID THIS WORK");
                         this.pieceSize = Integer.parseInt(value);
                         break;
                     //default:
@@ -89,6 +95,7 @@ public class fileLoader {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+                
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -96,6 +103,42 @@ public class fileLoader {
 
     }
 
+    
+    public HashMap<Integer, Peer> getpeerMap(){
+        return peersinNetwork;
+
+    }
+
+    public int getnumNeighbors(){
+        return numNeighbors;
+    }
+
+
+
+    public int getunchokeInterval(){
+        return unchokeInterval;
+    }
+
+
+
+    public String fileName(){
+        return fileName;
+    }
+
+
+
+    public int fileSize(){
+        return fileSize;
+    }
+
+
+
+    public int pieceSize(){
+        return pieceSize;
+    }
+
+
+    
     }
 
 

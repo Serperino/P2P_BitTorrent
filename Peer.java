@@ -10,6 +10,7 @@ public class Peer {
     private String hostName;
     private String port;
     private int hasFile;
+    private fileLoader info;
    // private fileLoader;
     //Need to add bitfield here
     //also need a peerlist so that these clients can then connect to the servers that we already have listed
@@ -30,15 +31,31 @@ public class Peer {
         //only thing missing here is way to store file that the peer has, but for now i'm ignoring that.
     }
 
-    public void serverStart(){ //every client will be acting as a server, so we open up on that port
-        //Idea right now is every peer makes a server, and then connects to a list of servers that we make
-        	try {
-                ServerSocket listener = new ServerSocket(Integer.parseInt(this.port));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
+    public int getpeerID(){
+        return peerID;
     }
+
+
+
+    public String gethostName(){
+        return hostName;
+    }
+
+
+
+    public String getportNumber(){
+        return port;
+    }
+
+
+    public int hasFile(){
+        return hasFile;
+    }
+
+    
+    
+
+   
 
 
 }
