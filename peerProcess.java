@@ -24,7 +24,7 @@ public class peerProcess {
 
 
 
-    public static void main(String[] args){
+    public static void main(String[] args) throws IOException{
         if(args.length == 0){
             System.out.println("Invalid arguments");
             
@@ -67,7 +67,7 @@ public class peerProcess {
         }
     }
 
-    public void serverStart() throws IOException{
+    public static void serverStart() throws IOException{
         ServerSocket socket = new ServerSocket(currPeer.getpeerID());
         currPeer.setServerSocket(socket);
         Thread incomingConnections = new Thread();
