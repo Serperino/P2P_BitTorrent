@@ -54,4 +54,32 @@ public class handShake {
     public int getPeerId() {
         return peerID;
     }
+
+
+
+    public String getHeader(){
+        return header;
+    }
+
+
+    public int getzerobitsLength(){
+        return ZERO_BITS_LENGTH;
+    }
+
+    public int getpeeridSize(){
+        return PEER_ID_SIZE;
+    }
+
+
+
+    public int getLength(){
+        return length;
+    }
+
+
+
+
+
+
+
 }

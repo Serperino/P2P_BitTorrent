@@ -11,6 +11,9 @@ public class Peer {
     private String port;
     private int hasFile;
     private fileLoader info;
+    private ServerSocket serverSocket;
+
+
    // private fileLoader;
     //Need to add bitfield here
     //also need a peerlist so that these clients can then connect to the servers that we already have listed
@@ -31,10 +34,11 @@ public class Peer {
         //only thing missing here is way to store file that the peer has, but for now i'm ignoring that.
     }
 
+
+    //GETTER FUNCTIONS:
     public int getpeerID(){
         return peerID;
     }
-
 
 
     public String gethostName(){
@@ -50,6 +54,14 @@ public class Peer {
 
     public int hasFile(){
         return hasFile;
+    }
+
+    public ServerSocket getServerSocket(){
+        return serverSocket;
+    }
+
+    public void setServerSocket(ServerSocket socket){
+        this.serverSocket = socket;
     }
 
     

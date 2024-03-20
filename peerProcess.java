@@ -2,15 +2,18 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.io.BufferedReader;
 
-
-
+//socket information:
+//https://www.oracle.com/java/technologies/jpl2-socket-communication.html
 public class peerProcess {
    //The peer partaking in the process
     static Peer currPeer;
+    private ServerSocket serverSocket;
+
     //Information to load into the config file
     static fileLoader configInfo = new fileLoader();
     HashMap<Integer, Peer> connectedPeers;
@@ -36,6 +39,9 @@ public class peerProcess {
              peerVerifier(inputID);
              System.out.println("peer ID: " + currPeer.getpeerID());
              System.out.println("hostname: " + currPeer.gethostName());
+             serverStart();
+
+                
              
      
 
@@ -59,6 +65,21 @@ public class peerProcess {
         if(!peerFound){
             System.out.println("Peer not found :[");
         }
+    }
+
+    public void serverStart() throws IOException{
+        ServerSocket socket = new ServerSocket(currPeer.getpeerID());
+        currPeer.setServerSocket(socket);
+        Thread incomingConnections = new Thread();
+        incomingConnections.start();
+        try {
+
+        } catch (Exception e) {
+            System.out.println("idk what happened");
+        }
+        
+     
+        
     }
 }
 
