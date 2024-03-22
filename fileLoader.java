@@ -130,7 +130,7 @@ public class fileLoader {
 
 
 
-    public String fileName()
+    public String getfileName()
     {
         return fileName;
     }
@@ -143,7 +143,7 @@ public class fileLoader {
 
 
 
-    public int fileSize()
+    public int getfileSize()
     {
         return fileSize;
     }

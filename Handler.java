@@ -13,7 +13,8 @@ public class Handler extends Thread {
     private ObjectOutputStream out;    //stream write to the socket
 	private int no;		//The index number of the client
 
-    public Handler(Socket connection, int no) {
+    public Handler(Socket connection, int no) 
+    {
         this.connection = connection;
 	    this.no = no;
     }

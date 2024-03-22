@@ -10,33 +10,39 @@ public class handShake {
 
 
 
-    public handShake(int peerID){
+    public handShake(int peerID)
+    {
         this.peerID = peerID;
         handShake.header = "P2PFILESHARINGPROJ";
         handShake.length=header.length()+ZERO_BITS_LENGTH+PEER_ID_SIZE;
 
     }
-    public byte[] encode() {
+    public byte[] encode() 
+    {
         ByteBuffer buffer = ByteBuffer.allocate(header.length() + ZERO_BITS_LENGTH + PEER_ID_SIZE);
         buffer.put(header.getBytes());
         buffer.put(new byte[ZERO_BITS_LENGTH]); 
         buffer.putInt(peerID);
         return buffer.array();
     }
-    public static handShake decode(byte[] handshakeBytes) {
-        if (handshakeBytes.length != header.length() + ZERO_BITS_LENGTH + PEER_ID_SIZE) {
+    public static handShake decode(byte[] handshakeBytes) 
+    {
+        if (handshakeBytes.length != header.length() + ZERO_BITS_LENGTH + PEER_ID_SIZE) 
+        {
             throw new IllegalArgumentException("Invalid handshake message length");
         }
 
         byte[] headerBytes = Arrays.copyOfRange(handshakeBytes, 0, header.length());
         String header = new String(headerBytes);
 
-        if (!header.equals(header)) {
+        if (!header.equals(header)) 
+        {
             throw new IllegalArgumentException("Invalid handshake header");
         }
         byte[] zeroBytes = Arrays.copyOfRange(handshakeBytes, header.length(), header.length()+10);
         boolean allZero = true;
-        for (byte b : zeroBytes) {
+        for (byte b : zeroBytes) 
+        {
             if (b != 0) {
                 allZero = false;
                 break;
@@ -44,6 +50,7 @@ public class handShake {
         }
 
         if (!allZero) {
+
             throw new IllegalArgumentException("Zero bytes section is invalid");
         }
 
@@ -51,28 +58,35 @@ public class handShake {
 
         return new handShake(peerId);
     }
-    public int getPeerId() {
+    //GETTER FUNCTIONS
+    public int getPeerId() 
+    {
         return peerID;
     }
 
 
 
-    public String getHeader(){
+    public String getHeader()
+    {
         return header;
     }
 
 
-    public int getzerobitsLength(){
+    public int getzerobitsLength()
+    {
         return ZERO_BITS_LENGTH;
     }
 
-    public int getpeeridSize(){
+
+    public int getpeeridSize()
+    {
         return PEER_ID_SIZE;
     }
 
 
 
-    public int getLength(){
+    public int getLength()
+    {
         return length;
     }
 

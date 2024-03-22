@@ -6,6 +6,7 @@ import java.nio.channels.*;
 import java.util.*;
 
 public class Peer {
+    //
     private int peerID;
     private String hostName;
     private String port;
@@ -20,8 +21,10 @@ public class Peer {
    // private fileLoader;
     //Need to add bitfield here
     //also need a peerlist so that these clients can then connect to the servers that we already have listed
+    //mainly here for testing, but useful
     @Override
-    public String toString() { //mainly here for testing, but useful
+    public String toString() 
+    { 
         return "Peer{" +
                 "peerID=" + peerID +
                 ", hostName='" + hostName + '\'' +
@@ -29,7 +32,8 @@ public class Peer {
                 ", hasFile=" + hasFile +
                 '}';
     }
-    public Peer(int peerID, String hostName, String port, int hasFile){
+    public Peer(int peerID, String hostName, String port, int hasFile)
+    {
         this.peerID = peerID;
         this.hostName = hostName;
         this.port = port;
@@ -39,31 +43,37 @@ public class Peer {
 
 
     //GETTER FUNCTIONS:
-    public int getpeerID(){
+    public int getpeerID()
+    {
         return peerID;
     }
 
 
-    public String gethostName(){
+    public String gethostName()
+    {
         return hostName;
     }
 
 
 
-    public String getportNumber(){
+    public String getportNumber()
+    {
         return port;
     }
 
 
-    public int hasFile(){
+    public int hasFile()
+    {
         return hasFile;
     }
 
-    public ServerSocket getServerSocket(){
+    public ServerSocket getServerSocket()
+    {
         return serverSocket;
     }
 
-    public void setServerSocket(ServerSocket socket){
+    public void setServerSocket(ServerSocket socket)
+    {
         this.serverSocket = socket;
     }
 

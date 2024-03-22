@@ -56,16 +56,20 @@ public class peerProcess {
 
     }
 
-    public static void peerVerifier(Integer peerID) {
+    public static void peerVerifier(Integer peerID) 
+    {
         boolean peerFound = false;
-        for(Integer inputID: configInfo.getpeerMap().keySet()){
-            if(inputID.equals(peerID)){
+        for(Integer inputID: configInfo.getpeerMap().keySet())
+        {
+            if(inputID.equals(peerID))
+            {
               System.out.println("Running peer: " + peerID);
               peerFound = true;
               currPeer = configInfo.getpeerMap().get(peerID);
             }
         }
-        if(!peerFound){
+        if(!peerFound)
+        {
             System.out.println("Peer not found :[");
         }
     }
