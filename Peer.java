@@ -12,6 +12,9 @@ public class Peer {
     private int hasFile;
     private fileLoader info;
     private ServerSocket serverSocket;
+    private ObjectOutputStream output;
+    private ObjectInputStream input;
+    Vector<Peer> activePeers = new Vector<Peer>();
 
 
    // private fileLoader;

@@ -3,9 +3,11 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.io.BufferedReader;
+import java.util.Vector;
 
 //socket information:
 //https://www.oracle.com/java/technologies/jpl2-socket-communication.html
@@ -17,6 +19,7 @@ public class peerProcess {
     //Information to load into the config file
     static fileLoader configInfo = new fileLoader();
     HashMap<Integer, Peer> connectedPeers;
+    Vector<Peer> activePeers = new Vector<Peer>();
 
 
 
@@ -70,14 +73,21 @@ public class peerProcess {
     public static void serverStart() throws IOException{
         ServerSocket socket = new ServerSocket(currPeer.getpeerID());
         currPeer.setServerSocket(socket);
-        Thread incomingConnections = new Thread();
-        incomingConnections.start();
-        try {
-
-        } catch (Exception e) {
-            System.out.println("idk what happened");
-        }
-        
+        //Thread incomingConnections = new Thread();
+        //incomingConnections.start();
+        //Socket clientSocket = socket.accept();
+        // for (Peer peer : configInfo.getpeerMap().values()) {
+        //     int peerID = peer.getpeerID();
+        //     System.out.println(peerID);
+        //     System.out.println(configInfo.getpeerMap().size());
+        //     new Handler(socket.accept(), 1002).start();
+        //     System.out.println("Client "  + peerID + " is connected!");
+        // }
+   
+          
+        // }
+    
+    
      
         
     }

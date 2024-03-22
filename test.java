@@ -6,9 +6,9 @@ public class test {
         loader.loadCommon();
         loader.loadpeerInfo();
 
-        System.out.println("Number of Preferred Neighbors: " + loader.numNeighbors);
-        System.out.println("Unchoking Interval: " + loader.unchokeInterval);
-        System.out.println("Optimistic Unchoking Interval: " + loader.optimisticInterval);
+        System.out.println("Number of Preferred Neighbors: " + loader.getnumNeighbors());
+        System.out.println("Unchoking Interval: " + loader.getunchokeInterval());
+        System.out.println("Optimistic Unchoking Interval: " + loader.);
         System.out.println("File Name: " + loader.fileName);
         System.out.println("File Size: " + loader.fileSize);
         System.out.println("Piece Size: " + loader.pieceSize);

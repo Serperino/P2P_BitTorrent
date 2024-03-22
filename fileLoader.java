@@ -101,37 +101,77 @@ public class fileLoader {
     }
 
     
-    public HashMap<Integer, Peer> getpeerMap(){
+    public HashMap<Integer, Peer> getpeerMap()
+    {
         return peersinNetwork;
 
     }
 
-    public int getnumNeighbors(){
+    public int getnumNeighbors()
+    {
         return numNeighbors;
     }
+    public void setnumNeighbors(int numNeighbors)
+    {
+        this.numNeighbors = numNeighbors;
+    }
+    
 
 
 
-    public int getunchokeInterval(){
+    public int getunchokeInterval()
+    {
         return unchokeInterval;
     }
-
-
-
-    public String fileName(){
-        return fileName;
+    public void setunchokeInterval(int unchokeInterval)
+    {
+        this.unchokeInterval = unchokeInterval;
     }
 
 
 
-    public int fileSize(){
+    public String fileName()
+    {
+        return fileName;
+    }
+    public void setfileName (String fileName)
+    {
+        this.fileName = fileName;
+    }
+
+
+
+
+
+    public int fileSize()
+    {
         return fileSize;
     }
 
+    public void setfileSize(int fileSize)
+    {
+        this.fileSize = fileSize;
+    }
 
 
-    public int pieceSize(){
+
+    public int pieceSize()
+    {
         return pieceSize;
+    }
+    public void setpieceSize(int pieceSize)
+    {
+        this.pieceSize = pieceSize;
+    }
+
+    public int getoptimisticInterval()
+    {
+        return optimisticInterval;
+    }
+
+    public void setoptimisticInterval(int optimisticInterval)
+    {
+        this.optimisticInterval = optimisticInterval;
     }
 
 
