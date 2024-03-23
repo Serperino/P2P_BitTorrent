@@ -16,15 +16,19 @@ public class fileLoader {
     private int pieceSize;
     private HashMap<Integer, Peer> peersinNetwork;
     
-    public fileLoader(){
+    
+    public fileLoader()
+    {
         this.peersinNetwork = new HashMap<>();
     }
     //going to be creating functions here to load common.cfg and peerinfo.cfg
 
 
 
-    public void loadCommon(){
+    public void loadCommon()
+    {
        // int index = 0;
+       //Always will be reading from this file
         File commonCFG = new File ("Common.cfg");
 
 
@@ -32,6 +36,7 @@ public class fileLoader {
             while (myScanner.hasNextLine()){
                 String fileData = myScanner.nextLine();
                 String[] fileSplit = fileData.split(" ");
+                //Fileslpit must be 2 as it has to have a label and the content, if its more or less the format is invalid
                 if(fileSplit.length !=2){
 
                     throw new IllegalArgumentException("Invalid format in the .cfg file");
@@ -39,6 +44,8 @@ public class fileLoader {
                 String label = fileSplit[0];
                 String value = fileSplit[1];
 
+
+                //Uses the label to read what info is being read in from cfg file
                 switch(label){
                     case "NumberofPreferredNeighbors":
                         this.numNeighbors = Integer.parseInt(value);
@@ -66,21 +73,29 @@ public class fileLoader {
                 }
 
             }
-        } catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) 
+        {
             e.printStackTrace();
         }
       
 
         }
 
-    public void loadpeerInfo(){
+    public void loadpeerInfo()
+    {
+        //Always will be reading from this file
         File peerInfo = new File ("PeerInfo.cfg");//https://stackoverflow.com/questions/13405822/using-bufferedreader-readline-in-a-while-loop-properly
-        try (BufferedReader br = new BufferedReader(new FileReader(peerInfo))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(peerInfo))) 
+        {
             String line;
-            try {
-                while((line = br.readLine()) != null){ 
+            try 
+            {
+                while((line = br.readLine()) != null)
+                { 
                     String[] parts = line.split(" ");
-                    if(parts.length == 4){
+                    //Peer info is in the form of 4 parts, so if it isnt 4 parts, the format is invalid
+                    if(parts.length == 4)
+                    {
                         int peerID = Integer.parseInt(parts[0]);
                         String hostName = parts[1];
                         String port = parts[2];
@@ -90,11 +105,13 @@ public class fileLoader {
                     }
 
                 }
-            } catch (IOException e) {
+            } catch (IOException e) 
+            {
                 e.printStackTrace();
                 
             }
-        } catch (IOException e) {
+        } catch (IOException e) 
+        {
             e.printStackTrace();
         }
 
@@ -159,15 +176,21 @@ public class fileLoader {
     {
         return pieceSize;
     }
+
+
     public void setpieceSize(int pieceSize)
     {
         this.pieceSize = pieceSize;
     }
 
+
+
     public int getoptimisticInterval()
     {
         return optimisticInterval;
     }
+
+
 
     public void setoptimisticInterval(int optimisticInterval)
     {

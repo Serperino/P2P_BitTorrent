@@ -6,7 +6,7 @@ import java.nio.channels.*;
 import java.util.*;
 
 public class Peer {
-    //
+    //All attributes a peer has
     private int peerID;
     private String hostName;
     private String port;
@@ -15,6 +15,8 @@ public class Peer {
     private ServerSocket serverSocket;
     private ObjectOutputStream output;
     private ObjectInputStream input;
+    private Server server;
+    private Thread listenThread;
     Vector<Peer> activePeers = new Vector<Peer>();
 
 
@@ -38,11 +40,26 @@ public class Peer {
         this.hostName = hostName;
         this.port = port;
         this.hasFile = hasFile;
-        //only thing missing here is way to store file that the peer has, but for now i'm ignoring that.
+        //only thing missing here is way to store file that the peer has, but will be implemented later
     }
 
 
     //GETTER FUNCTIONS:
+
+
+    public Thread gethostThread()
+    {
+        return listenThread;
+    }
+    public void sethostThread(Thread thread)
+    {
+        this.listenThread = thread;
+    }
+
+    public Server getServer(){
+        return server;
+    }
+
     public int getpeerID()
     {
         return peerID;
@@ -71,10 +88,16 @@ public class Peer {
     {
         return serverSocket;
     }
+    
 
     public void setServerSocket(ServerSocket socket)
     {
         this.serverSocket = socket;
+    }
+
+    public void  setServer(Server server)
+    {
+        this.server = server;
     }
 
     

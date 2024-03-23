@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 import java.io.BufferedReader;
 import java.util.Vector;
@@ -19,6 +20,7 @@ public class peerProcess {
     //Information to load into the config file
     static fileLoader configInfo = new fileLoader();
     HashMap<Integer, Peer> connectedPeers;
+    HashMap<Integer, Thread> connectedThreads;
     Vector<Peer> activePeers = new Vector<Peer>();
 
 
@@ -32,7 +34,8 @@ public class peerProcess {
             System.out.println("Invalid arguments");
             
         }
-        else{
+        else
+        {
             fileLoader loader = new fileLoader();
             //Loads information from common.cfg and peer.info
             configInfo.loadCommon();
@@ -40,9 +43,9 @@ public class peerProcess {
             configInfo.loadpeerInfo();
              Integer inputID = Integer.parseInt(args[0]);
              peerVerifier(inputID);
-             System.out.println("peer ID: " + currPeer.getpeerID());
-             System.out.println("hostname: " + currPeer.gethostName());
-             serverStart();
+             System.out.println("Running peer: " + currPeer.getpeerID());
+             beginListening();
+
 
                 
              
@@ -50,11 +53,21 @@ public class peerProcess {
 
  
         }
+
+
+
        
 
         
 
     }
+
+    public static void beginSearching()
+    {
+
+    }
+
+   
 
     public static void peerVerifier(Integer peerID) 
     {
@@ -74,27 +87,68 @@ public class peerProcess {
         }
     }
 
-    public static void serverStart() throws IOException{
-        ServerSocket socket = new ServerSocket(currPeer.getpeerID());
-        currPeer.setServerSocket(socket);
-        //Thread incomingConnections = new Thread();
-        //incomingConnections.start();
-        //Socket clientSocket = socket.accept();
-        // for (Peer peer : configInfo.getpeerMap().values()) {
-        //     int peerID = peer.getpeerID();
-        //     System.out.println(peerID);
-        //     System.out.println(configInfo.getpeerMap().size());
-        //     new Handler(socket.accept(), 1002).start();
-        //     System.out.println("Client "  + peerID + " is connected!");
+
+    //temporary lambda function code until thread class is setup, again just testing connections
+    public static void beginListening()
+     {
+
+        Runnable serverStart = () -> {
+            try {
+                serverStart();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        };
+
+        Thread listeningThread = new Thread(serverStart);
+        listeningThread.start();
+
+    }
+    
+    
+
+    public static void serverStart() throws IOException
+    {
+        //Right now this just listens for the whole time
+        System.out.println("The server is running."); 
+        	ServerSocket listener = new ServerSocket(currPeer.getpeerID());
+        	try {
+            		while(true) {
+                        //hardcoded test values for now
+                		new Handler(listener.accept(), 1001).start();
+                        new Handler(listener.accept(), 1002).start();
+                        new Handler(listener.accept(), 1003).start();
+                        new Handler(listener.accept(), 1004).start();
+                        new Handler(listener.accept(), 1005).start();
+
+				System.out.println("Client "  + "1001" + " is connected!");
+			
+            			}
+        	} finally {
+            		listener.close();
+        	} 
+
+        //This is likely going to be in the final version, but using the base code right now for testing
+        // try{
+        //     ServerSocket socket = new ServerSocket(currPeer.getpeerID());
+        //     Thread hostThread = new Thread();
+        //     currPeer.setServerSocket(socket);
+        //     currPeer.sethostThread(hostThread);
+        //     System.out.println("Server started on " + currPeer.getpeerID());
+        //     currPeer.gethostThread().start();
+                
         // }
-   
+        // catch (Exception e) {
+        //     e.printStackTrace();
+        // }
+       
           
-        // }
+         }
     
     
      
         
     }
-}
+
 
 
