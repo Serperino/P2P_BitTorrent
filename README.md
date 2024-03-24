@@ -1,7 +1,7 @@
 # P2P_BitTorrent
-# John Mone
-# Jiawei Weng
-# Darren Wang
+## John Mone
+## Jiawei Weng
+## Darren Wang
 
 Progress done:
 Handshake class completed
