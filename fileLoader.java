@@ -14,6 +14,8 @@ public class fileLoader {
     private String fileName;
     private int fileSize;
     private int pieceSize;
+    message message;
+    handShake handshake;
     private HashMap<Integer, Peer> peersinNetwork;
     
     
@@ -37,7 +39,7 @@ public class fileLoader {
             while (myScanner.hasNextLine()){
                 String fileData = myScanner.nextLine();
                 String[] fileSplit = fileData.split(" ");
-                //Fileslpit must be 2 as it has to have a label and the content, if its more or less the format is invalid
+                //Filesplit must be 2 as it has to have a label and the content, if its more or less the format is invalid
                 if(fileSplit.length !=2)
                 {
 
@@ -223,7 +225,7 @@ public class fileLoader {
 
 
 
-    
+
 
     public void setoptimisticInterval(int optimisticInterval)
     {
