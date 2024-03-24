@@ -3,7 +3,7 @@ import java.io.*;
 import java.nio.*;
 import java.nio.channels.*;
 import java.util.*;
-
+//PURELY HERE FOR CONVENIENCE 
 public class Client {
 	Socket requestSocket;           //socket connect to the server
 	ObjectOutputStream out;         //stream write to the socket

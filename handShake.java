@@ -59,6 +59,10 @@ public class handShake {
         return new handShake(peerId);
     }
     //GETTER FUNCTIONS
+
+
+
+
     public int getPeerId() 
     {
         return peerID;
@@ -72,10 +76,19 @@ public class handShake {
     }
 
 
+
+
+
+
+
     public int getzerobitsLength()
     {
         return ZERO_BITS_LENGTH;
     }
+
+
+
+
 
 
     public int getpeeridSize()
@@ -84,6 +97,9 @@ public class handShake {
     }
 
 
+
+
+    
 
     public int getLength()
     {

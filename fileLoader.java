@@ -32,12 +32,14 @@ public class fileLoader {
         File commonCFG = new File ("Common.cfg");
 
 
-        try (Scanner myScanner = new Scanner(commonCFG)) {
+        try (Scanner myScanner = new Scanner(commonCFG)) 
+        {
             while (myScanner.hasNextLine()){
                 String fileData = myScanner.nextLine();
                 String[] fileSplit = fileData.split(" ");
                 //Fileslpit must be 2 as it has to have a label and the content, if its more or less the format is invalid
-                if(fileSplit.length !=2){
+                if(fileSplit.length !=2)
+                {
 
                     throw new IllegalArgumentException("Invalid format in the .cfg file");
                 }
@@ -46,7 +48,8 @@ public class fileLoader {
 
 
                 //Uses the label to read what info is being read in from cfg file
-                switch(label){
+                switch(label)
+                {
                     case "NumberofPreferredNeighbors":
                         this.numNeighbors = Integer.parseInt(value);
                         break;
@@ -124,10 +127,16 @@ public class fileLoader {
 
     }
 
+
+
+
     public int getnumNeighbors()
     {
         return numNeighbors;
     }
+
+
+
     public void setnumNeighbors(int numNeighbors)
     {
         this.numNeighbors = numNeighbors;
@@ -140,6 +149,9 @@ public class fileLoader {
     {
         return unchokeInterval;
     }
+
+
+
     public void setunchokeInterval(int unchokeInterval)
     {
         this.unchokeInterval = unchokeInterval;
@@ -151,6 +163,11 @@ public class fileLoader {
     {
         return fileName;
     }
+
+
+
+
+
     public void setfileName (String fileName)
     {
         this.fileName = fileName;
@@ -165,10 +182,16 @@ public class fileLoader {
         return fileSize;
     }
 
+
+
+
+
     public void setfileSize(int fileSize)
     {
         this.fileSize = fileSize;
     }
+
+
 
 
 
@@ -178,10 +201,16 @@ public class fileLoader {
     }
 
 
+
+
+
     public void setpieceSize(int pieceSize)
     {
         this.pieceSize = pieceSize;
     }
+
+
+
 
 
 
@@ -191,6 +220,10 @@ public class fileLoader {
     }
 
 
+
+
+
+    
 
     public void setoptimisticInterval(int optimisticInterval)
     {
