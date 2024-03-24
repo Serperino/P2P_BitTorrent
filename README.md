@@ -8,6 +8,6 @@ Handshake class completed
 Connection established between multiple peers
 General idea understood
 
-# To be done
+# To be done:
 Sending information
 Working on the actual functions of BitTorrent (unchoking, optimistic unchoking)
