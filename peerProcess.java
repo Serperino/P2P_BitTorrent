@@ -24,12 +24,37 @@ public class peerProcess {
  	static ObjectInputStream in;          
 	String message;                
 	String MESSAGE;          
+    message typemessage;
+    handShake handshake;
+
+
+
+
+
+
+
+
+
+
 
     //Information to load into the config file
+    //Data structures being used (WIP)
     static fileLoader configInfo = new fileLoader();
     HashMap<Integer, Peer> connectedPeers;
     HashMap<Integer, Thread> connectedThreads;
     Vector<Peer> activePeers = new Vector<Peer>();
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -76,6 +101,11 @@ public class peerProcess {
 
 
 
+
+
+
+
+
     //Uses some of the client code 
     public static void beginSearching() throws UnknownHostException, IOException
     {
@@ -101,6 +131,8 @@ public class peerProcess {
 
    
 
+    
+
 
 
 
@@ -122,6 +154,9 @@ public class peerProcess {
             System.out.println("Peer not found :[");
         }
     }
+
+
+
 
 
 
@@ -236,6 +271,14 @@ public class peerProcess {
     
 
 
+
+
+
+
+
+
+
+
      //This is the handler class copied directly from the server example code
      //These functions will likely not all be in the final model but are just here for testing right now
      //will modify in the future as needed
@@ -298,6 +341,19 @@ public class peerProcess {
 			}
 		}
 	}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	//send a message to the output stream
 	public void sendMessage(String msg)
