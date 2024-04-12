@@ -27,16 +27,6 @@ public class peerProcess {
     message typemessage;
     handShake handshake;
 
-
-
-
-
-
-
-
-
-
-
     //Information to load into the config file
     //Data structures being used (WIP)
     static fileLoader configInfo = new fileLoader();
@@ -44,29 +34,10 @@ public class peerProcess {
     HashMap<Integer, Thread> connectedThreads;
     Vector<Peer> activePeers = new Vector<Peer>();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     public static void main(String[] args) throws IOException{
         if(args.length == 0)
         {
             System.out.println("Invalid arguments");
-            
         }
         else
         {
@@ -81,30 +52,10 @@ public class peerProcess {
              beginListening();
              beginSearching();
 
-
-                
-             
-     
-
-
- 
         }
-
-
-
-       
-
-        
 
     }
     
-
-
-
-
-
-
-
 
     //Uses some of the client code 
     public static void beginSearching() throws UnknownHostException, IOException
@@ -128,15 +79,6 @@ public class peerProcess {
             }
     }
     }
-
-   
-
-    
-
-
-
-
-
     public static void peerVerifier(Integer peerID) 
     {
         boolean peerFound = false;
@@ -155,14 +97,6 @@ public class peerProcess {
         }
     }
 
-
-
-
-
-
-
-
-
     //temporary lambda function code until thread class is setup, again just testing connections
     public static void beginListening()
      {
@@ -180,15 +114,6 @@ public class peerProcess {
 
     }
     
-    
-
-
-
-
-
-
-
-
     //Uses some of the server code in the example
     public static void serverStart() throws IOException
     {
@@ -213,75 +138,8 @@ public class peerProcess {
                 acceptingConnections.close();
         	} 
         
-
             }
-            //GRAVEYARD OF CODE might pull  ideas from this later
-            // try {
-            //     while(true) {
-            //         Peer workingPeer = configInfo.getpeerMap().get(peerID);
-            //         //String address = workingPeer.gethostName();
-            //         //new Handler(, peerID).start();
-            //         System.out.println("Client "  + peerID + " is connected!");
-            //     }
-            // } catch (IOException e) {
-            //     System.err.println("Error opening ServerSocket for peer with ID: " + peerID);
-            //     e.printStackTrace();
-            // }
-        }
-        //Right now this just listens for the whole time
-        	//ServerSocket listener = new ServerSocket(currPeer.getpeerID());
-        	// try {
-            // 		while(true) {
-            //             new Handler(acceptingConnections.accept(),clientNum).start();
-            //             System.out.println("Client "  + clientNum + " is connected!");
-                       
-
-            //             // //hardcoded test values for now
-            //     		// new Handler(listener.accept(), 1001).start();
-            //             // new Handler(listener.accept(), 1002).start();
-            //             // new Handler(listener.accept(), 1003).start();
-            //             // new Handler(listener.accept(), 1004).start();
-            //             // new Handler(listener.accept(), 1005).start();
-
-			// //	System.out.println("Client "  + "1001" + " is connected!");
-			
-            // 			}
-        	//} finally {
-            	//	listener.close();
-                   // acceptingConnections.close()
-;        //	} 
-
-        //This is likely going to be in the final version, but using the base code right now for testing
-        // try{
-        //     ServerSocket socket = new ServerSocket(currPeer.getpeerID());
-        //     Thread hostThread = new Thread();
-        //     currPeer.setServerSocket(socket);
-        //     currPeer.sethostThread(hostThread);
-        //     System.out.println("Server started on " + currPeer.getpeerID());
-        //     currPeer.gethostThread().start();
-                
-        // }
-        // catch (Exception e) {
-        //     e.printStackTrace();
-        // }
-       
-          
-         }
-    
-    
-
-
-
-
-
-
-
-
-
-
-     //This is the handler class copied directly from the server example code
-     //These functions will likely not all be in the final model but are just here for testing right now
-     //will modify in the future as needed
+        
      private static class Handler extends Thread {
         private String message;    //message received from the client
 		private String MESSAGE;    //uppercase message send to the client
@@ -341,19 +199,6 @@ public class peerProcess {
 			}
 		}
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 	//send a message to the output stream
 	public void sendMessage(String msg)
