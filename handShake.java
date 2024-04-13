@@ -2,7 +2,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 public class handShake {
-    private static String header;
+    private static String header = "P2PFILESHARINGPROJ";
     private int peerID;
     private static int ZERO_BITS_LENGTH = 10;
     private static int PEER_ID_SIZE = 4;
@@ -27,6 +27,7 @@ public class handShake {
     }
     public static handShake decode(byte[] handshakeBytes) 
     {
+        
         if (handshakeBytes.length != header.length() + ZERO_BITS_LENGTH + PEER_ID_SIZE) 
         {
             throw new IllegalArgumentException("Invalid handshake message length");

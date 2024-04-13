@@ -160,7 +160,7 @@ public class peerProcess {
         {
 
 			out = new ObjectOutputStream(connection.getOutputStream());
-			//in = new ObjectInputStream(connection.getInputStream());
+			in = new ObjectInputStream(connection.getInputStream());
             handShake newShake = new handShake(currPeer.getpeerID());
             byte[] handshakeBytes = newShake.encode();
             out.writeObject(handshakeBytes);
@@ -171,17 +171,19 @@ public class peerProcess {
             {
 				while(true)
 				{
-					//receive the message sent from the client
-                    //message = "hi";
-					//message = (String)in.readObject();
-					//show the message to the user
-					//System.out.println("Receive message: " + message + " from client " + no);
-					//Capitalize all letters in the message
-					//MESSAGE = message.toUpperCase();
-					//send MESSAGE back to the client
-					//sendMessage(MESSAGE);
+                    //CURRENT DEBUGGING FOR OUTPUT
+                    byte[] gromp = (byte[]) in.readObject();
+                    handShake decoded = handShake.decode(gromp);
+                    System.out.println("This is the header SERVERSIDE: " + decoded.getHeader());
+                    System.out.println("This is the ID SERVERSIDE: " + decoded.getPeerId());
+                    System.out.println("This is the zero bits length SERVERSIDE: " + decoded.getzerobitsLength());
+                    
 				}
-			} finally
+			} catch (ClassNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+           finally
             {
                 //Close connections
                 //try
@@ -193,7 +195,7 @@ public class peerProcess {
                 //catch(IOException ioException)
                // {
                     
-                    System.out.println("Disconnect with Client " + no);
+                //ystem.out.println("Disconnect with Client " + no);
                 //}
             }
 			//catch(ClassNotFoundException classnot)
@@ -259,24 +261,22 @@ public class peerProcess {
                 out = new ObjectOutputStream(connection.getOutputStream());
                 out.flush();
                 in = new ObjectInputStream(connection.getInputStream());
+               
+			//in = new ObjectInputStream(connection.getInputStream());
+            
             try
             {
 				while(true)
 				{
 					byte[] gromp = (byte[]) in.readObject();
-                    //handShake decoded = handShake.decode(gromp);
-                    int data;
-
-                    //CURRENT DEBUGGING FOR OUTPUT
-                    ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(gromp);
-                    while ((data = byteArrayInputStream.read()) != -1) {
-                       // Process each byte (data) here
-                     System.out.print((char) data); // Assuming data represents ASCII characters
-                     }
-            
-					System.out.println("Receive message: " + message + " from client " + no);
-					MESSAGE = message.toUpperCase();
-				
+                    handShake decoded = handShake.decode(gromp);
+                    System.out.println("This is the header: " + decoded.getHeader());
+                    System.out.println("This is the ID: " + decoded.getPeerId());
+                    System.out.println("This is the zero bits length: " + decoded.getzerobitsLength());
+                    handShake newShake = new handShake(currPeer.getpeerID());
+                    byte[] handshakeBytes = newShake.encode();
+                    out.writeObject(handshakeBytes);
+                    out.flush();
 				}
 			} finally {
                 System.out.println("test");
