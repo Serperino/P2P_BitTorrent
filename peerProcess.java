@@ -1,5 +1,7 @@
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -13,6 +15,10 @@ import java.util.Scanner;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.util.Vector;
+import java.util.BitSet;
+import java.io.OutputStream;
+
+
 
 //socket information:
 //https://www.oracle.com/java/technologies/jpl2-socket-communication.html
@@ -28,6 +34,7 @@ public class peerProcess {
     message typemessage;
     handShake handshake;
     static ServerSocket acceptingConnections;
+    static byte[] fileData;
 
     //Information to load into the config file
     //Data structures being used (WIP)
@@ -48,9 +55,17 @@ public class peerProcess {
             configInfo.loadCommon();
             //This specifically contains the map of the peers
             configInfo.loadpeerInfo();
+            System.out.println("does this print before bitfield??" + fileLoader.gettotalPieces());
              Integer inputID = Integer.parseInt(args[0]);
              peerVerifier(inputID);
+             currPeer.bitField = new BitSet(fileLoader.gettotalPieces());
              System.out.println("Running peer: " + currPeer.getpeerID());
+             if(currPeer.hasFile() == 1){
+                String folderName = "peer_" + currPeer.getpeerID();
+                System.out.println(folderName);
+                loadFile(folderName);
+    
+             }
              beginListening();
              beginSearching();
 
@@ -154,6 +169,7 @@ public class peerProcess {
 	    		this.no = no;
         	}
 
+            
         public void run()
          {
  		try
@@ -165,6 +181,14 @@ public class peerProcess {
             byte[] handshakeBytes = newShake.encode();
             out.writeObject(handshakeBytes);
             out.flush();
+            if(currPeer.hasFile() == 1){
+                System.out.println("do i have indefinitely in here?");
+                out.writeObject(fileData);
+                out.flush(); // Flush the stream to ensure all data is sent
+                System.out.println("File data sent successfully.");
+            }
+            System.out.println("or do i make it out?");
+            System.out.println(currPeer.hasFile());
            // in = new ObjectInputStream(connection.getInputStream());
             
 			try
@@ -277,8 +301,19 @@ public class peerProcess {
                     byte[] handshakeBytes = newShake.encode();
                     out.writeObject(handshakeBytes);
                     out.flush();
+                    //TEST FOR SENDING IMAGE, WORKING 
+                    // sleep(10000);
+                    // byte[] test = (byte[]) in.readObject();
+                    // out.writeObject(test);
+                    // String tempPath = "peer_1002/poop.jpg";
+                    // FileOutputStream fileOutputStream = new FileOutputStream(tempPath);
+                    // fileOutputStream.write(test);
+                    // fileOutputStream.close();
+
+                    
 				}
-			} finally {
+			
+            } finally {
                 System.out.println("test");
             }
         }
@@ -310,6 +345,31 @@ public class peerProcess {
                  ioException.printStackTrace();
              }
          }
+
+
+         public static void loadFile(String folderName) {
+            try {
+                File folder = new File(folderName);
+                File[] allFiles = folder.listFiles();
+                File sendFile = allFiles[1];
+               // System.out.println("Getting the name:" + sendFile.getName());
+                if (sendFile == null) {
+                    System.out.println("File not found.");
+                }
+                FileInputStream in = new FileInputStream(sendFile);
+                fileData = new byte[(int) sendFile.length()];
+                if(fileData.length == sendFile.length()){
+                    System.out.println("im supposed to be here");
+
+                }
+                in.read(fileData);
+                in.close();
+                System.out.println("File loaded successfully for peer " + currPeer.getpeerID());
+            } catch (IOException e) {
+                System.err.println("Error loading file: " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
     }
 
     

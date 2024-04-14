@@ -4,6 +4,7 @@ import java.io.*;
 import java.nio.*;
 import java.nio.channels.*;
 import java.util.*;
+import java.util.BitSet;
 
 public class Peer {
     //All attributes a peer has
@@ -17,6 +18,8 @@ public class Peer {
     private ObjectInputStream input;
     private Server server;
     private Thread listenThread;
+    //public byte[] bitField;
+    public BitSet bitField;
     Vector<Peer> activePeers = new Vector<Peer>();
 
 
@@ -40,6 +43,10 @@ public class Peer {
         this.hostName = hostName;
         this.port = port;
         this.hasFile = hasFile;
+        if(hasFile == 1){
+           
+
+        }
         //only thing missing here is way to store file that the peer has, but will be implemented later
     }
 
@@ -78,6 +85,10 @@ public class Peer {
         return port;
     }
 
+  
+
+  
+
 
     public int hasFile()
     {
@@ -100,7 +111,15 @@ public class Peer {
         this.server = server;
     }
 
-    
+    public BitSet getbitField()
+    {
+        return bitField;
+    }
+
+    public void setBitField(BitSet bitField){
+        this.bitField = bitField;
+    }
+
     
 
    

@@ -14,6 +14,7 @@ public class fileLoader {
     private String fileName;
     private int fileSize;
     private int pieceSize;
+    private static int totalPieces;
     message message;
     handShake handshake;
     private HashMap<Integer, Peer> peersinNetwork;
@@ -74,15 +75,22 @@ public class fileLoader {
                    // throw new IllegalArgumentException("Invalid format in the .cfg file");
                    // for some reason this causes it to crash
 
+                  
+
 
                 }
+               
+
 
             }
         } catch (FileNotFoundException e) 
         {
             e.printStackTrace();
         }
-      
+        int pieceNumber = (fileSize/pieceSize);
+         totalPieces = (int) Math.ceil((double) fileSize/pieceSize);
+        
+        System.out.println("these are the totalpieces: " + totalPieces);
 
         }
 
@@ -220,6 +228,13 @@ public class fileLoader {
     {
         return optimisticInterval;
     }
+
+    public static  int gettotalPieces()
+    {
+        return totalPieces;
+    }
+
+
 
 
 
