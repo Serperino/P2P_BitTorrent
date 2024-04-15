@@ -37,17 +37,21 @@ public class Peer {
                 ", hasFile=" + hasFile +
                 '}';
     }
-    public Peer(int peerID, String hostName, String port, int hasFile)
+    public Peer(int peerID, String hostName, String port, int hasFile, int totalPieces)
     {
         this.peerID = peerID;
         this.hostName = hostName;
         this.port = port;
         this.hasFile = hasFile;
+        System.out.println("this is in the peer constructor");
+        System.out.println(totalPieces);
+        this.bitField = new BitSet(totalPieces);
         if(hasFile == 1){
+
+            
            
 
         }
-        //only thing missing here is way to store file that the peer has, but will be implemented later
     }
 
 

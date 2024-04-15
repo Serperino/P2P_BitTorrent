@@ -35,7 +35,6 @@ public class peerProcess {
     handShake handshake;
     static ServerSocket acceptingConnections;
     static byte[] fileData;
-
     //Information to load into the config file
     //Data structures being used (WIP)
     static fileLoader configInfo = new fileLoader();
@@ -55,14 +54,12 @@ public class peerProcess {
             configInfo.loadCommon();
             //This specifically contains the map of the peers
             configInfo.loadpeerInfo();
-            System.out.println("does this print before bitfield??" + fileLoader.gettotalPieces());
              Integer inputID = Integer.parseInt(args[0]);
              peerVerifier(inputID);
-             currPeer.bitField = new BitSet(fileLoader.gettotalPieces());
              System.out.println("Running peer: " + currPeer.getpeerID());
              if(currPeer.hasFile() == 1){
+                currPeer.bitField.set(0, fileLoader.gettotalPieces());
                 String folderName = "peer_" + currPeer.getpeerID();
-                System.out.println(folderName);
                 loadFile(folderName);
     
              }
@@ -182,7 +179,6 @@ public class peerProcess {
             out.writeObject(handshakeBytes);
             out.flush();
             if(currPeer.hasFile() == 1){
-                System.out.println("do i have indefinitely in here?");
                 out.writeObject(fileData);
                 out.flush(); // Flush the stream to ensure all data is sent
                 System.out.println("File data sent successfully.");
@@ -196,8 +192,8 @@ public class peerProcess {
 				while(true)
 				{
                     //CURRENT DEBUGGING FOR OUTPUT
-                    byte[] gromp = (byte[]) in.readObject();
-                    handShake decoded = handShake.decode(gromp);
+                    byte[] incomingHandshake = (byte[]) in.readObject();
+                    handShake decoded = handShake.decode(incomingHandshake);
                     System.out.println("This is the header SERVERSIDE: " + decoded.getHeader());
                     System.out.println("This is the ID SERVERSIDE: " + decoded.getPeerId());
                     System.out.println("This is the zero bits length SERVERSIDE: " + decoded.getzerobitsLength());
@@ -292,8 +288,8 @@ public class peerProcess {
             {
 				while(true)
 				{
-					byte[] gromp = (byte[]) in.readObject();
-                    handShake decoded = handShake.decode(gromp);
+					byte[] incomingHandshake = (byte[]) in.readObject();
+                    handShake decoded = handShake.decode(incomingHandshake);
                     System.out.println("This is the header: " + decoded.getHeader());
                     System.out.println("This is the ID: " + decoded.getPeerId());
                     System.out.println("This is the zero bits length: " + decoded.getzerobitsLength());
@@ -301,11 +297,13 @@ public class peerProcess {
                     byte[] handshakeBytes = newShake.encode();
                     out.writeObject(handshakeBytes);
                     out.flush();
+                   
                     //TEST FOR SENDING IMAGE, WORKING 
-                    // sleep(10000);
                     // byte[] test = (byte[]) in.readObject();
+                     //System.arraycopy(test, 0, fileData, 16384);
+                    //fileData = 
                     // out.writeObject(test);
-                    // String tempPath = "peer_1002/poop.jpg";
+                    // String tempPath = "peer_1002/test.jpg";
                     // FileOutputStream fileOutputStream = new FileOutputStream(tempPath);
                     // fileOutputStream.write(test);
                     // fileOutputStream.close();

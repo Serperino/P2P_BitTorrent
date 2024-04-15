@@ -113,7 +113,7 @@ public class fileLoader {
                         String hostName = parts[1];
                         String port = parts[2];
                         int hasFile = Integer.parseInt(parts[3]);
-                        this.peersinNetwork.put(peerID, new Peer(peerID, hostName, port, hasFile));
+                        this.peersinNetwork.put(peerID, new Peer(peerID, hostName, port, hasFile, totalPieces));
 
                     }
 
