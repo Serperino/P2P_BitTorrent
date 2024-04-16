@@ -17,7 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.util.Vector;
 import java.util.BitSet;
 import java.io.OutputStream;
-
+import java.nio.ByteBuffer;
 
 
 //socket information:
@@ -31,15 +31,15 @@ public class peerProcess {
  	static ObjectInputStream in;          
 	String message;                
 	String MESSAGE;          
-    message typemessage;
+   // message typemessage;
     handShake handshake;
     static ServerSocket acceptingConnections;
     static byte[] fileData;
     //Information to load into the config file
     //Data structures being used (WIP)
     static fileLoader configInfo = new fileLoader();
-    HashMap<Integer, Peer> connectedPeers;
-    HashMap<Integer, Thread> connectedThreads;
+    //HashMap<Integer, Peer> connectedPeers;
+    //HashMap<Integer, Thread> connectedThreads;
     Vector<Peer> activePeers = new Vector<Peer>();
 
     public static void main(String[] args) throws IOException{
@@ -179,9 +179,13 @@ public class peerProcess {
             out.writeObject(handshakeBytes);
             out.flush();
             if(currPeer.hasFile() == 1){
-                out.writeObject(fileData);
+                Message message = new Message(MessageType.BITFIELD, fileData);
+                byte[] toSend = message.encode();
+                out.writeObject(toSend);
                 out.flush(); // Flush the stream to ensure all data is sent
                 System.out.println("File data sent successfully.");
+                out.writeObject(currPeer.getbitField());
+                out.flush(); // Flush the stream to ensure all data is sent
             }
             System.out.println("or do i make it out?");
             System.out.println(currPeer.hasFile());
@@ -283,12 +287,7 @@ public class peerProcess {
                 in = new ObjectInputStream(connection.getInputStream());
                
 			//in = new ObjectInputStream(connection.getInputStream());
-            
-            try
-            {
-				while(true)
-				{
-					byte[] incomingHandshake = (byte[]) in.readObject();
+                    byte[] incomingHandshake = (byte[]) in.readObject();
                     handShake decoded = handShake.decode(incomingHandshake);
                     System.out.println("This is the header: " + decoded.getHeader());
                     System.out.println("This is the ID: " + decoded.getPeerId());
@@ -297,6 +296,19 @@ public class peerProcess {
                     byte[] handshakeBytes = newShake.encode();
                     out.writeObject(handshakeBytes);
                     out.flush();
+            try
+            {
+                byte[] incomingMessage = (byte[]) in.readObject();
+                Message decodedMessage = Message.decode(incomingMessage); // Create an instance and then call decode
+                System.out.println(decodedMessage.getType());
+                
+
+				while(true)
+				{
+                    
+                    
+
+					
                    
                     //TEST FOR SENDING IMAGE, WORKING 
                     // byte[] test = (byte[]) in.readObject();

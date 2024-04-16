@@ -20,7 +20,7 @@ public class Peer {
     private Thread listenThread;
     //public byte[] bitField;
     public BitSet bitField;
-    Vector<Peer> activePeers = new Vector<Peer>();
+    Vector<Peer> activeNeighbors = new Vector<Peer>();
 
 
    // private fileLoader;

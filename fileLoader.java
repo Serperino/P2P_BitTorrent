@@ -15,7 +15,7 @@ public class fileLoader {
     private int fileSize;
     private int pieceSize;
     private static int totalPieces;
-    message message;
+    Message message;
     handShake handshake;
     private HashMap<Integer, Peer> peersinNetwork;
     
