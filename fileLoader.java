@@ -205,7 +205,7 @@ public class fileLoader {
 
 
 
-    public int pieceSize()
+    public int getpieceSize()
     {
         return pieceSize;
     }

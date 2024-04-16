@@ -158,7 +158,7 @@ public class peerProcess {
 		private String MESSAGE;    //uppercase message send to the client
 		private Socket connection;
         private ObjectInputStream in;	//stream read from the socket
-        private ObjectOutputStream out;    //stream write to the socket
+        private static ObjectOutputStream out;    //stream write to the socket
 		private int no;		//The index number of the client
 
         	public Handler(Socket connection, int no) {
@@ -179,13 +179,14 @@ public class peerProcess {
             out.writeObject(handshakeBytes);
             out.flush();
             if(currPeer.hasFile() == 1){
-                Message message = new Message(MessageType.BITFIELD, fileData);
+              //  byte[] bitFieldconvert = currPeer.getbitField().toByteArray();
+                Message message = new Message(MessageType.BITFIELD, currPeer.getbitField().toByteArray());
                 byte[] toSend = message.encode();
                 out.writeObject(toSend);
                 out.flush(); // Flush the stream to ensure all data is sent
                 System.out.println("File data sent successfully.");
-                out.writeObject(currPeer.getbitField());
-                out.flush(); // Flush the stream to ensure all data is sent
+                //out.writeObject(currPeer.getbitField());
+                //out.flush(); // Flush the stream to ensure all data is sent
             }
             System.out.println("or do i make it out?");
             System.out.println(currPeer.hasFile());
@@ -193,14 +194,51 @@ public class peerProcess {
             
 			try
             {
+                System.out.println("do i get stuck here?");
+                byte[] incomingHandshake = (byte[]) in.readObject();
+                handShake decoded = handShake.decode(incomingHandshake);
+                System.out.println("This is the header SERVERSIDE: " + decoded.getHeader());
+                System.out.println("This is the ID SERVERSIDE: " + decoded.getPeerId());
+                System.out.println("This is the zero bits length SERVERSIDE: " + decoded.getzerobitsLength());
 				while(true)
 				{
-                    //CURRENT DEBUGGING FOR OUTPUT
-                    byte[] incomingHandshake = (byte[]) in.readObject();
-                    handShake decoded = handShake.decode(incomingHandshake);
-                    System.out.println("This is the header SERVERSIDE: " + decoded.getHeader());
-                    System.out.println("This is the ID SERVERSIDE: " + decoded.getPeerId());
-                    System.out.println("This is the zero bits length SERVERSIDE: " + decoded.getzerobitsLength());
+
+                byte[] incomingMessage = (byte[]) in.readObject();
+                Message decodedMessage = Message.decode(incomingMessage); // Create an instance and then call decode
+                System.out.println("oir do i get stuck here?");
+
+                    switch(decodedMessage.getType()){
+                        case CHOKE:
+
+                        case UNCHOKE:
+
+                        case INTERESTED:
+
+                        case NOT_INTERESTED:
+
+                        case HAVE:
+
+                        case BITFIELD:
+
+                        case REQUEST:
+                        System.out.println("request received");
+                        ByteBuffer buffer = ByteBuffer.wrap(decodedMessage.getPayload());
+                        int index = buffer.getInt();
+                        System.out.println(index);
+                        int offset = index * configInfo.getpieceSize();
+                        byte[] requestedPiece = new byte[configInfo.getpieceSize()];
+                        System.arraycopy(fileData, offset, requestedPiece, 0, configInfo.getpieceSize()); //https://www.geeksforgeeks.org/system-arraycopy-in-java/
+                       // Message message = new Message(MessageType.PIECE, requestedPiece);
+                        pieceMessage(offset, requestedPiece);
+                       // byte[] toSend = message.encode();
+                        //sendMessage(toSend);
+
+                        case PIECE:
+
+
+
+                    }
+                   
                     
 				}
 			} catch (ClassNotFoundException e) {
@@ -246,23 +284,50 @@ public class peerProcess {
 				System.out.println("Disconnect with Client " + no);
 			//}
 		}
-	}
 
+
+    
+
+
+	}
+    public static void sendMessage(byte[] msg){
+        try
+        {
+            out.writeObject(msg);
+            out.flush();
+           // System.out.println("Send message: " + msg + " to Client " + no);
+        }
+        catch(IOException ioException)
+        {
+            ioException.printStackTrace();
+        }
+    }
+    public static void requestMessage(int i ){
+        ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
+        buffer.putInt(i);
+        byte[] payload = buffer.array();
+        Message message = new Message(MessageType.REQUEST, payload);
+        byte[] toSend = message.encode();
+        sendMessage(toSend);
+    
+     }
+
+       public static void pieceMessage(int i, byte[] pieceRequested ){
+        System.out.println("this is the offset:" + i);
+        ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES + configInfo.getpieceSize());
+        buffer.putInt(i);
+        buffer.put(pieceRequested);
+        byte[] payload = buffer.array();
+        Message message = new Message(MessageType.PIECE, payload);
+        byte[] toSend = message.encode();
+        sendMessage(toSend);
+    
+     }
+    
 	//send a message to the output stream
-	public void sendMessage(String msg)
-	{
-		try
-        {
-			out.writeObject(msg);
-			out.flush();
-			System.out.println("Send message: " + msg + " to Client " + no);
-		}
-		catch(IOException ioException)
-        {
-			ioException.printStackTrace();
-		}
-	}
 
+
+   
     }
 
 
@@ -272,8 +337,9 @@ public class peerProcess {
 		private String MESSAGE;    //uppercase message send to the client
 		private Socket connection;
         private ObjectInputStream in;	//stream read from the socket
-        private ObjectOutputStream out;    //stream write to the socket
+        private static ObjectOutputStream out;    //stream write to the socket
 		private int no;		//The index number of the client
+        byte[] fileInfo;
 
         public clientHandler(Socket connection, int no) {
             this.connection = connection;
@@ -298,13 +364,66 @@ public class peerProcess {
                     out.flush();
             try
             {
+                while(true)
+				{
+               // sleep(5000);
+                System.out.println("do i hit this twice or something?");
                 byte[] incomingMessage = (byte[]) in.readObject();
                 Message decodedMessage = Message.decode(incomingMessage); // Create an instance and then call decode
+                System.out.println("is this printing anything??");
                 System.out.println(decodedMessage.getType());
+                System.out.println("is this printing anything??");
+
+                switch(decodedMessage.getType()){
+                    case CHOKE:
+
+                    case UNCHOKE:
+
+                    case INTERESTED:
+
+                    case NOT_INTERESTED:
+
+                    case HAVE:
+
+                    case BITFIELD:
+                    BitSet receivedbitField = BitSet.valueOf(decodedMessage.getPayload());
+                    System.out.println("this is the length: " + receivedbitField.length());
+                    for(int i = 0; i < receivedbitField.length(); i++){
+                        if(receivedbitField.get(i) && !currPeer.getbitField().get(i)){
+                            System.out.println("buffer groverflow");
+                            requestMessage(i);
+                            break;
+
+                        }
+    
+                    }
+                    break;
+                    case PIECE:
+                    System.out.println("I MADE IT TO PIECE");
+                    byte[] payload = decodedMessage.getPayload();
+                    ByteBuffer buffer = ByteBuffer.wrap(payload);
+                    int offset = buffer.getInt(); // Extract the offset from the first 4 bytes
+
+                    // Now you can use the offset value as needed
+                    System.out.println("Offset: " + offset);
+
+                    
+                  // System.arraycopy(decodedMessage.getPayload(), offset, requestedPiece, 0, configInfo.getpieceSize());
+                    
+
+
+                }
+                // System.out.println(decodedMessage.getType());
+                // byte[] imageMaybe = decodedMessage.getPayload();
+                //   String tempPath = "peer_1002/test.jpg";
+                //      FileOutputStream fileOutputStream = new FileOutputStream(tempPath);
+                //     fileOutputStream.write(decodedMessage.getPayload());
+                //      fileOutputStream.close();
+                //      System.out.println("do i make it here");
+
                 
 
-				while(true)
-				{
+				
                     
                     
 
@@ -338,25 +457,48 @@ public class peerProcess {
             
           
             } 
+            public static void sendMessage(byte[] msg)
+            {
+                try
+                {
+                    out.writeObject(msg);
+                    out.flush();
+                   // System.out.println("Send message: " + msg + " to Client " + no);
+                }
+                catch(IOException ioException)
+                {
+                    ioException.printStackTrace();
+                }
+            }
+
+            public static void requestMessage(int i ){
+                ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
+                buffer.putInt(i);
+                byte[] payload = buffer.array();
+                Message message = new Message(MessageType.REQUEST, payload);
+                byte[] toSend = message.encode();
+                sendMessage(toSend);
+            
+             }
+
+               public static void pieceMessage(int i, byte[] pieceRequested ){
+                ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES + configInfo.getpieceSize());
+                buffer.putInt(i);
+                byte[] payload = buffer.array();
+                Message message = new Message(MessageType.REQUEST, payload);
+                byte[] toSend = message.encode();
+                sendMessage(toSend);
+            
+             }
 
          }
    
 
-         public void sendMessage(String msg)
-         {
-             try
-             {
-                 out.writeObject(msg);
-                 out.flush();
-                // System.out.println("Send message: " + msg + " to Client " + no);
-             }
-             catch(IOException ioException)
-             {
-                 ioException.printStackTrace();
-             }
-         }
+       
 
 
+
+       
          public static void loadFile(String folderName) {
             try {
                 File folder = new File(folderName);
@@ -388,4 +530,3 @@ public class peerProcess {
 
 
         
-    
