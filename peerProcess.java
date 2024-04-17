@@ -41,6 +41,8 @@ public class peerProcess {
     //HashMap<Integer, Peer> connectedPeers;
     //HashMap<Integer, Thread> connectedThreads;
     Vector<Peer> activePeers = new Vector<Peer>();
+    //track neighbors bitfield by bitfield msg and update by have msg.
+    static HashMap<Integer, BitSet> peerBitfields = new HashMap<>();
 
     public static void main(String[] args) throws IOException{
         if(args.length == 0)
@@ -160,6 +162,9 @@ public class peerProcess {
         private ObjectInputStream in;	//stream read from the socket
         private static ObjectOutputStream out;    //stream write to the socket
 		private int no;		//The index number of the client
+        private byte[] payload;
+        private int PeerID;
+
 
         	public Handler(Socket connection, int no) {
             		this.connection = connection;
@@ -197,6 +202,7 @@ public class peerProcess {
                 System.out.println("do i get stuck here?");
                 byte[] incomingHandshake = (byte[]) in.readObject();
                 handShake decoded = handShake.decode(incomingHandshake);
+                PeerID=decoded.getPeerId();
                 System.out.println("This is the header SERVERSIDE: " + decoded.getHeader());
                 System.out.println("This is the ID SERVERSIDE: " + decoded.getPeerId());
                 System.out.println("This is the zero bits length SERVERSIDE: " + decoded.getzerobitsLength());
@@ -207,6 +213,7 @@ public class peerProcess {
 
                 byte[] incomingMessage = (byte[]) in.readObject();
                 Message decodedMessage = Message.decode(incomingMessage); // Create an instance and then call decode
+                payload=decodedMessage.getPayload();
                 System.out.println("oir do i get stuck here?");
 
                     switch(decodedMessage.getType()){
@@ -224,11 +231,33 @@ public class peerProcess {
                         
                         case BITFIELD:
                             System.out.println("get bitfiled msg");
-
+                           
+                            BitSet bitfield = BitSet.valueOf(payload);
+                            peerBitfields.put(PeerID, bitfield);
+                            if(isInterestedInPeer(PeerID)){
+                                sendInterestedMessage();
+                            }
+                            else{sendNotInterestedMessage();}
+                            break;
 
 
                         case HAVE:
-                     
+                        payload = decodedMessage.getPayload();                   
+                        ByteBuffer payloadBuffer = ByteBuffer.wrap(payload);
+                        int pieceIndex = payloadBuffer.getInt();
+                        BitSet neighborBitField = peerBitfields.getOrDefault(PeerID, new BitSet());
+                        neighborBitField.set(pieceIndex); 
+                        peerBitfields.put(PeerID, neighborBitField);
+
+                        if (!currPeer.getbitField().get(pieceIndex)) {
+                            
+                            sendInterestedMessage();
+                            
+                        } else {
+                            
+                            sendNotInterestedMessage();
+                        }
+                        break;
 
                         case REQUEST:
                         System.out.println("request received");
@@ -296,10 +325,30 @@ public class peerProcess {
 		}
 
 
+
     
 
 
 	}
+    public static void sendInterestedMessage(){
+        Message message = new Message(MessageType.INTERESTED,null);
+        byte[] encodedMessage = message.encode();
+        sendMessage(encodedMessage);
+
+     } public static void sendNotInterestedMessage(){
+        Message message = new Message(MessageType.NOT_INTERESTED,null);
+        byte[] encodedMessage = message.encode();
+        sendMessage(encodedMessage);
+
+     }
+     
+    public boolean isInterestedInPeer(int peerId) {
+        BitSet theirBitfield = peerBitfields.get(peerId);
+        BitSet ourBitfield = currPeer.getbitField();  // 假设currPeer有一个获取其bitfield的方法
+        BitSet interestSet = (BitSet) theirBitfield.clone();
+        interestSet.andNot(ourBitfield);
+        return !interestSet.isEmpty();
+    }
     public static void sendMessage(byte[] msg){
         try
         {
@@ -394,15 +443,18 @@ public class peerProcess {
 
                     case NOT_INTERESTED:
 
+
+                    
+                    //get have msg from peers, check the payload with our bitfield, if we have not the piece, send Interest msg, else no interest.
                     case HAVE:
                         payload = decodedMessage.getPayload();                   
                         ByteBuffer payloadBuffer = ByteBuffer.wrap(payload);
                         int pieceIndex = payloadBuffer.getInt();
-                    
-                        
+
                         if (!currPeer.getbitField().get(pieceIndex)) {
                             
                             sendInterestedMessage();
+
                         } else {
                             
                             sendNotInterestedMessage();
