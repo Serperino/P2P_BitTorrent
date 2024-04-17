@@ -200,6 +200,8 @@ public class peerProcess {
                 System.out.println("This is the header SERVERSIDE: " + decoded.getHeader());
                 System.out.println("This is the ID SERVERSIDE: " + decoded.getPeerId());
                 System.out.println("This is the zero bits length SERVERSIDE: " + decoded.getzerobitsLength());
+               
+
 				while(true)
 				{
 
@@ -209,16 +211,24 @@ public class peerProcess {
 
                     switch(decodedMessage.getType()){
                         case CHOKE:
+                        System.out.println("get choke msg");
 
                         case UNCHOKE:
-
+                        System.out.println("get no choke msg");
+                       
                         case INTERESTED:
-
+                        System.out.println("get  int msg");
+                    
                         case NOT_INTERESTED:
+                        System.out.println("get no int msg");
+                        
+                        case BITFIELD:
+                            System.out.println("get bitfiled msg");
+
+
 
                         case HAVE:
-
-                        case BITFIELD:
+                     
 
                         case REQUEST:
                         System.out.println("request received");
@@ -340,6 +350,7 @@ public class peerProcess {
         private static ObjectOutputStream out;    //stream write to the socket
 		private int no;		//The index number of the client
         byte[] fileInfo;
+        byte[] payload;
 
         public clientHandler(Socket connection, int no) {
             this.connection = connection;
@@ -384,6 +395,19 @@ public class peerProcess {
                     case NOT_INTERESTED:
 
                     case HAVE:
+                        payload = decodedMessage.getPayload();                   
+                        ByteBuffer payloadBuffer = ByteBuffer.wrap(payload);
+                        int pieceIndex = payloadBuffer.getInt();
+                    
+                        
+                        if (!currPeer.getbitField().get(pieceIndex)) {
+                            
+                            sendInterestedMessage();
+                        } else {
+                            
+                            sendNotInterestedMessage();
+                        }
+                        break;
 
                     case BITFIELD:
                     BitSet receivedbitField = BitSet.valueOf(decodedMessage.getPayload());
@@ -399,13 +423,13 @@ public class peerProcess {
                     }
                     break;
                     case PIECE:
-                    System.out.println("I MADE IT TO PIECE");
-                    byte[] payload = decodedMessage.getPayload();
-                    ByteBuffer buffer = ByteBuffer.wrap(payload);
-                    int offset = buffer.getInt(); // Extract the offset from the first 4 bytes
+                        System.out.println("I MADE IT TO PIECE");
+                        payload = decodedMessage.getPayload();
+                        ByteBuffer buffer = ByteBuffer.wrap(payload);
+                        int offset = buffer.getInt(); // Extract the offset from the first 4 bytes
 
                     // Now you can use the offset value as needed
-                    System.out.println("Offset: " + offset);
+                        System.out.println("Offset: " + offset);
 
                     
                   // System.arraycopy(decodedMessage.getPayload(), offset, requestedPiece, 0, configInfo.getpieceSize());
@@ -490,6 +514,18 @@ public class peerProcess {
                 sendMessage(toSend);
             
              }
+             public static void sendInterestedMessage(){
+                Message message = new Message(MessageType.INTERESTED,null);
+                byte[] encodedMessage = message.encode();
+                sendMessage(encodedMessage);
+
+             } public static void sendNotInterestedMessage(){
+                Message message = new Message(MessageType.NOT_INTERESTED,null);
+                byte[] encodedMessage = message.encode();
+                sendMessage(encodedMessage);
+
+             }
+             
 
          }
    
