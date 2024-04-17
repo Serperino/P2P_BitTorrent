@@ -17,6 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.util.Vector;
 import java.util.BitSet;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 
 
@@ -30,11 +31,13 @@ public class peerProcess {
     static ObjectOutputStream out;        
  	static ObjectInputStream in;          
 	String message;                
-	String MESSAGE;          
+	String MESSAGE;        
+    static String fileName;  
    // message typemessage;
     handShake handshake;
     static ServerSocket acceptingConnections;
     static byte[] fileData;
+    //static RandomAccessFile writeFile;
     //Information to load into the config file
     //Data structures being used (WIP)
     static fileLoader configInfo = new fileLoader();
@@ -63,7 +66,13 @@ public class peerProcess {
                 currPeer.bitField.set(0, fileLoader.gettotalPieces());
                 String folderName = "peer_" + currPeer.getpeerID();
                 loadFile(folderName);
-    
+                System.out.println("server FILE DATA LENGTH:" + fileData.length);    
+             }
+             else {
+                fileData = new byte[configInfo.getfileSize()];
+                System.out.println("CLIENT FILE DATA LENGTH:" + fileData.length);
+                fileName = "peer_" + currPeer.getpeerID() + "/" + configInfo.getfileName();
+                System.out.println(fileName);
              }
              beginListening();
              beginSearching();
@@ -87,6 +96,7 @@ public class peerProcess {
             Peer workingPeer = configInfo.getpeerMap().get(peerID);
             String address = workingPeer.gethostName();
             requestSocket = new Socket("localhost", peerID);
+            System.out.println("socket at" + peerID);
             new clientHandler(requestSocket, peerID).start();
             System.out.println("Connected to " + peerID);
            
@@ -159,8 +169,8 @@ public class peerProcess {
         private String message;    //message received from the client
 		private String MESSAGE;    //uppercase message send to the client
 		private Socket connection;
-        private ObjectInputStream in;	//stream read from the socket
-        private static ObjectOutputStream out;    //stream write to the socket
+        private  ObjectInputStream in;	//stream read from the socket
+        private   ObjectOutputStream out;    //stream write to the socket
 		private int no;		//The index number of the client
         private byte[] payload;
         private int PeerID;
@@ -176,17 +186,20 @@ public class peerProcess {
          {
  		try
         {
-
+            
+            System.out.println("am i a separate instance?");
+            System.out.println(connection);
 			out = new ObjectOutputStream(connection.getOutputStream());
 			in = new ObjectInputStream(connection.getInputStream());
-            handShake newShake = new handShake(currPeer.getpeerID());
-            byte[] handshakeBytes = newShake.encode();
-            out.writeObject(handshakeBytes);
-            out.flush();
+            sendHandshake();
+            //sleep(4000);
+
             if(currPeer.hasFile() == 1){
               //  byte[] bitFieldconvert = currPeer.getbitField().toByteArray();
+                System.out.println("Sending bitfield connection to " + connection);
                 Message message = new Message(MessageType.BITFIELD, currPeer.getbitField().toByteArray());
                 byte[] toSend = message.encode();
+                System.out.println(toSend.length);
                 out.writeObject(toSend);
                 out.flush(); // Flush the stream to ensure all data is sent
                 System.out.println("File data sent successfully.");
@@ -204,6 +217,7 @@ public class peerProcess {
                 handShake decoded = handShake.decode(incomingHandshake);
                 PeerID=decoded.getPeerId();
                 System.out.println("This is the header SERVERSIDE: " + decoded.getHeader());
+                System.out.println("SERVERS FILEDATA LENGTH:" +  fileData.length);
                 System.out.println("This is the ID SERVERSIDE: " + decoded.getPeerId());
                 System.out.println("This is the zero bits length SERVERSIDE: " + decoded.getzerobitsLength());
                
@@ -260,7 +274,7 @@ public class peerProcess {
                         break;
 
                         case REQUEST:
-                        System.out.println("request received");
+                       // System.out.println("request received");
                         ByteBuffer buffer = ByteBuffer.wrap(decodedMessage.getPayload());
                         int index = buffer.getInt();
                         System.out.println(index);
@@ -268,7 +282,7 @@ public class peerProcess {
                         byte[] requestedPiece = new byte[configInfo.getpieceSize()];
                         System.arraycopy(fileData, offset, requestedPiece, 0, configInfo.getpieceSize()); //https://www.geeksforgeeks.org/system-arraycopy-in-java/
                        // Message message = new Message(MessageType.PIECE, requestedPiece);
-                        pieceMessage(offset, requestedPiece);
+                        pieceMessage(index, requestedPiece);
                        // byte[] toSend = message.encode();
                         //sendMessage(toSend);
 
@@ -307,7 +321,8 @@ public class peerProcess {
 		catch(IOException ioException)
         {
 			System.out.println("Disconnect with Client " + no);
-		}
+        } 
+	
 		finally
         {
 			//Close connections
@@ -330,12 +345,22 @@ public class peerProcess {
 
 
 	}
-    public static void sendInterestedMessage(){
+
+    public   void sendHandshake(){
+        handShake newShake = new handShake(currPeer.getpeerID());
+        System.out.println(currPeer.getpeerID());
+        byte[] handshakeBytes = newShake.encode();
+        sendMessage(handshakeBytes);
+
+     } 
+
+
+    public   void sendInterestedMessage(){
         Message message = new Message(MessageType.INTERESTED,null);
         byte[] encodedMessage = message.encode();
         sendMessage(encodedMessage);
 
-     } public static void sendNotInterestedMessage(){
+     } public   void sendNotInterestedMessage(){
         Message message = new Message(MessageType.NOT_INTERESTED,null);
         byte[] encodedMessage = message.encode();
         sendMessage(encodedMessage);
@@ -344,12 +369,12 @@ public class peerProcess {
      
     public boolean isInterestedInPeer(int peerId) {
         BitSet theirBitfield = peerBitfields.get(peerId);
-        BitSet ourBitfield = currPeer.getbitField();  // 假设currPeer有一个获取其bitfield的方法
+        BitSet ourBitfield = currPeer.getbitField();  
         BitSet interestSet = (BitSet) theirBitfield.clone();
         interestSet.andNot(ourBitfield);
         return !interestSet.isEmpty();
     }
-    public static void sendMessage(byte[] msg){
+    public    void sendMessage(byte[] msg){
         try
         {
             out.writeObject(msg);
@@ -361,7 +386,7 @@ public class peerProcess {
             ioException.printStackTrace();
         }
     }
-    public static void requestMessage(int i ){
+    public  void requestMessage(int i ){
         ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
         buffer.putInt(i);
         byte[] payload = buffer.array();
@@ -371,8 +396,8 @@ public class peerProcess {
     
      }
 
-       public static void pieceMessage(int i, byte[] pieceRequested ){
-        System.out.println("this is the offset:" + i);
+       public  void pieceMessage(int i, byte[] pieceRequested ){
+       // System.out.println("this is the offset:" + i);
         ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES + configInfo.getpieceSize());
         buffer.putInt(i);
         buffer.put(pieceRequested);
@@ -396,10 +421,12 @@ public class peerProcess {
 		private String MESSAGE;    //uppercase message send to the client
 		private Socket connection;
         private ObjectInputStream in;	//stream read from the socket
-        private static ObjectOutputStream out;    //stream write to the socket
+        private  ObjectOutputStream out;    //stream write to the socket
 		private int no;		//The index number of the client
         byte[] fileInfo;
         byte[] payload;
+        BitSet receivedbitField;
+
 
         public clientHandler(Socket connection, int no) {
             this.connection = connection;
@@ -408,6 +435,8 @@ public class peerProcess {
     public void run()
          {
             try {
+                System.out.println(fileName);
+                RandomAccessFile fileWrite = new RandomAccessFile(fileName, "rw"); //https://stackoverflow.com/questions/22020447/write-a-number-to-fileoutputstream-after-an-offset
                 out = new ObjectOutputStream(connection.getOutputStream());
                 out.flush();
                 in = new ObjectInputStream(connection.getInputStream());
@@ -427,12 +456,12 @@ public class peerProcess {
                 while(true)
 				{
                // sleep(5000);
-                System.out.println("do i hit this twice or something?");
+                //System.out.println("do i hit this twice or something?");
                 byte[] incomingMessage = (byte[]) in.readObject();
                 Message decodedMessage = Message.decode(incomingMessage); // Create an instance and then call decode
-                System.out.println("is this printing anything??");
+               // System.out.println("is this printing anything??");
                 System.out.println(decodedMessage.getType());
-                System.out.println("is this printing anything??");
+               // System.out.println("is this printing anything??");
 
                 switch(decodedMessage.getType()){
                     case CHOKE:
@@ -462,11 +491,12 @@ public class peerProcess {
                         break;
 
                     case BITFIELD:
-                    BitSet receivedbitField = BitSet.valueOf(decodedMessage.getPayload());
-                    System.out.println("this is the length: " + receivedbitField.length());
+                    receivedbitField = BitSet.valueOf(decodedMessage.getPayload());
+                    //System.out.println("this is the length: " + receivedbitField.length());
                     for(int i = 0; i < receivedbitField.length(); i++){
                         if(receivedbitField.get(i) && !currPeer.getbitField().get(i)){
-                            System.out.println("buffer groverflow");
+                          //  System.out.println("found at value" + i);
+                           // System.out.println("buffer groverflow");
                             requestMessage(i);
                             break;
 
@@ -475,13 +505,34 @@ public class peerProcess {
                     }
                     break;
                     case PIECE:
-                        System.out.println("I MADE IT TO PIECE");
+                      //  System.out.println("I MADE IT TO PIECE");
                         payload = decodedMessage.getPayload();
                         ByteBuffer buffer = ByteBuffer.wrap(payload);
                         int offset = buffer.getInt(); // Extract the offset from the first 4 bytes
+                        int fileOffset = offset * configInfo.getpieceSize();
+                        //System.out.println("Offset: " + offset);
+                        //System.out.println(payload.length);
+                        //System.out.println(configInfo.getpieceSize());
+                        System.arraycopy(payload, 4, fileData, fileOffset, configInfo.getpieceSize()); 
+                        fileWrite.seek(fileOffset);
+                        fileWrite.write(payload, 4, configInfo.getpieceSize());
+                        currPeer.getbitField().set(offset);
+                        for(int i = 0; i < receivedbitField.length(); i++){
+                            if(receivedbitField.get(i) && !currPeer.getbitField().get(i)){
+                                //System.out.println("requested new at " + i);
+                                //System.out.println("buffer groverflow");
+                                requestMessage(i);
+                                break;
+    
+                            }
+        
+                        }
+                        
+                        
+                        //int filewritePosition = 
+                      //  System.out.println(fileData.length);
+                       // fileWrite.seek()
 
-                    // Now you can use the offset value as needed
-                        System.out.println("Offset: " + offset);
 
                     
                   // System.arraycopy(decodedMessage.getPayload(), offset, requestedPiece, 0, configInfo.getpieceSize());
@@ -533,7 +584,7 @@ public class peerProcess {
             
           
             } 
-            public static void sendMessage(byte[] msg)
+            public  void sendMessage(byte[] msg)
             {
                 try
                 {
@@ -547,7 +598,7 @@ public class peerProcess {
                 }
             }
 
-            public static void requestMessage(int i ){
+            public  void requestMessage(int i ){
                 ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
                 buffer.putInt(i);
                 byte[] payload = buffer.array();
@@ -557,7 +608,7 @@ public class peerProcess {
             
              }
 
-               public static void pieceMessage(int i, byte[] pieceRequested ){
+               public  void pieceMessage(int i, byte[] pieceRequested ){
                 ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES + configInfo.getpieceSize());
                 buffer.putInt(i);
                 byte[] payload = buffer.array();
@@ -566,12 +617,12 @@ public class peerProcess {
                 sendMessage(toSend);
             
              }
-             public static void sendInterestedMessage(){
+             public  void sendInterestedMessage(){
                 Message message = new Message(MessageType.INTERESTED,null);
                 byte[] encodedMessage = message.encode();
                 sendMessage(encodedMessage);
 
-             } public static void sendNotInterestedMessage(){
+             } public  void sendNotInterestedMessage(){
                 Message message = new Message(MessageType.NOT_INTERESTED,null);
                 byte[] encodedMessage = message.encode();
                 sendMessage(encodedMessage);

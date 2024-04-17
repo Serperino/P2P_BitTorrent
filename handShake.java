@@ -30,6 +30,7 @@ public class handShake {
         
         if (handshakeBytes.length != header.length() + ZERO_BITS_LENGTH + PEER_ID_SIZE) 
         {
+            System.out.println("handshake stuff:" + handshakeBytes.length);
             throw new IllegalArgumentException("Invalid handshake message length");
         }
 
