@@ -17,9 +17,11 @@ import java.io.ByteArrayInputStream;
 import java.util.Vector;
 import java.util.BitSet;
 import java.io.OutputStream;
+import java.util.List;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 
+import java.util.Collections;
 
 //socket information:
 //https://www.oracle.com/java/technologies/jpl2-socket-communication.html
@@ -46,6 +48,9 @@ public class peerProcess {
     Vector<Peer> activePeers = new Vector<Peer>();
     //track neighbors bitfield by bitfield msg and update by have msg.
     static HashMap<Integer, BitSet> peerBitfields = new HashMap<>();
+    //update status interest or not
+    static HashMap<Integer, Boolean> peerInterestStatus = new HashMap<>();  
+
 
     public static void main(String[] args) throws IOException{
         if(args.length == 0)
@@ -354,16 +359,23 @@ public class peerProcess {
 
      } 
 
-
+     public void updateInterestStatus(int PeerID, boolean isInterested) {
+        peerInterestStatus.put(PeerID, isInterested);
+    }
+    public boolean isPeerLiked(int PeerID) {
+        return peerInterestStatus.getOrDefault(PeerID, false);
+    }
     public   void sendInterestedMessage(){
         Message message = new Message(MessageType.INTERESTED,null);
         byte[] encodedMessage = message.encode();
         sendMessage(encodedMessage);
+        updateInterestStatus(PeerID, true);
 
      } public   void sendNotInterestedMessage(){
         Message message = new Message(MessageType.NOT_INTERESTED,null);
         byte[] encodedMessage = message.encode();
         sendMessage(encodedMessage);
+        updateInterestStatus(PeerID, false);
 
      }
      
@@ -407,6 +419,18 @@ public class peerProcess {
         sendMessage(toSend);
     
      }
+
+     public List<Integer> selectPreferredNeighbors() {
+        List<Integer> preferredNeighbors = new ArrayList<>();
+        for (Integer peerId : peerInterestStatus.keySet()) {
+            if (isPeerLiked(PeerID)) {
+                preferredNeighbors.add(PeerID);
+            }
+        }
+       //need add sort by download rate or update rate.
+        return preferredNeighbors;
+    }
+    
     
 	//send a message to the output stream
 
