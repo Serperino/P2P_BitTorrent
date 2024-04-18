@@ -21,6 +21,10 @@ import java.io.OutputStream;
 import java.util.List;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.sql.Time;
+import java.util.Timer;
+import java.util.TimerTask;
+
 
 import java.util.Collections;
 
@@ -89,7 +93,8 @@ public class peerProcess {
     
 
     //Uses some of the client code 
-    public static void beginSearching() throws UnknownHostException, IOException
+    
+    public static void hostOpen() throws UnknownHostException, IOException
     {
         for (Integer peerID : configInfo.getpeerMap().keySet()) 
         {
@@ -101,6 +106,7 @@ public class peerProcess {
             {
             Peer workingPeer = configInfo.getpeerMap().get(peerID);
             String address = workingPeer.gethostName();
+            System.out.println("i break here?" + peerID);
             requestSocket = new Socket("localhost", peerID);
             System.out.println("socket at" + peerID);
             new clientHandler(requestSocket, peerID).start();
@@ -110,6 +116,21 @@ public class peerProcess {
             }
     }
     }
+    public static void beginSearching()
+    {
+
+       Runnable hostOpen = () -> {
+           try {
+            hostOpen();
+           } catch (IOException e) {
+               e.printStackTrace();
+           }
+       };
+
+       Thread listeningThread = new Thread(hostOpen);
+       listeningThread.start();
+
+   }
     public static void peerVerifier(Integer peerID) 
     {
         boolean peerFound = false;
@@ -143,6 +164,8 @@ public class peerProcess {
         listeningThread.start();
 
     }
+
+
     
     //Uses some of the server code in the example
     public static void serverStart() throws IOException
@@ -195,7 +218,6 @@ public class peerProcess {
  		try
         {
             
-            System.out.println("am i a separate instance?");
             System.out.println(connection);
 			out = new ObjectOutputStream(connection.getOutputStream());
 			in = new ObjectInputStream(connection.getInputStream());
@@ -227,21 +249,36 @@ public class peerProcess {
               
 
                 PeerID=decoded.getPeerId();
+                System.out.println("I AM A HOST TO " + PeerID);
                 System.out.println("This is the header SERVERSIDE: " + decoded.getHeader());
                 System.out.println("SERVERS FILEDATA LENGTH:" +  fileData.length);
                 System.out.println("This is the ID SERVERSIDE: " + decoded.getPeerId());
                 System.out.println("This is the zero bits length SERVERSIDE: " + decoded.getzerobitsLength());
+
+
+                Timer timer = new Timer();
+                timer.scheduleAtFixedRate(new TimerTask() {
+                    @Override
+                    public void run() {
+                        for (Map.Entry<Integer, Integer> entry : downloadRates.entrySet()) {
+                            int peerId = entry.getKey();
+                            int rate = entry.getValue();
+                           System.out.println("Peer ID: " + peerId + ", Download Rate: " + rate);
+                        }
+                    }
+                }, 0, configInfo.getunchokeInterval() * 1000); 
+                
                
 
 				while(true)
 				{
 
-                    for (Map.Entry<Integer, Integer> entry : downloadRates.entrySet()) {
-                        int peerId = entry.getKey();
-                        int rate = entry.getValue();
-                        System.out.println("Peer ID: " + peerId + ", Download Rate: " + rate);
-                    }
-                    sleep(2000);
+                    // for (Map.Entry<Integer, Integer> entry : downloadRates.entrySet()) {
+                    //     int peerId = entry.getKey();
+                    //     int rate = entry.getValue();
+                    //     System.out.println("Peer ID: " + peerId + ", Download Rate: " + rate);
+                    // }
+                    //sleep(2000);
                 byte[] incomingMessage = (byte[]) in.readObject();
                 Message decodedMessage = Message.decode(incomingMessage); // Create an instance and then call decode
                 payload=decodedMessage.getPayload();
@@ -250,15 +287,21 @@ public class peerProcess {
                     switch(decodedMessage.getType()){
                         case CHOKE:
                         System.out.println("get choke msg");
+                        break;
 
                         case UNCHOKE:
                         System.out.println("get no choke msg");
+                        break;
                        
                         case INTERESTED:
-                        System.out.println("get  int msg");
+                        updateInterestStatus(PeerID, true);
+                        System.out.println(PeerID + "is interested :D");
+                        break;
                     
                         case NOT_INTERESTED:
-                        System.out.println("get no int msg");
+                        updateInterestStatus(PeerID, false);
+                        System.out.println(PeerID + "is NOT interested :[");
+                        break;
                         
                         case BITFIELD:
                             System.out.println("get bitfiled msg");
@@ -268,7 +311,8 @@ public class peerProcess {
                             if(isInterestedInPeer(PeerID)){
                                 sendInterestedMessage();
                             }
-                            else{sendNotInterestedMessage();}
+                            else{
+                                sendNotInterestedMessage();}
                             break;
 
 
@@ -311,10 +355,7 @@ public class peerProcess {
 			} catch (ClassNotFoundException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            } 
            finally
             {
                 //Close connections
@@ -377,7 +418,7 @@ public class peerProcess {
     public boolean isPeerLiked(int PeerID) {
         return peerInterestStatus.getOrDefault(PeerID, false);
     }
-    public   void sendInterestedMessage(){
+    public void sendInterestedMessage(){
         Message message = new Message(MessageType.INTERESTED,null);
         byte[] encodedMessage = message.encode();
         sendMessage(encodedMessage);
@@ -464,6 +505,8 @@ public class peerProcess {
         byte[] payload;
         BitSet receivedbitField;
         static HashMap<Integer, Integer> downloadRates = new HashMap<>();
+        private int PeerID;
+
 
 
 
@@ -483,6 +526,7 @@ public class peerProcess {
 			//in = new ObjectInputStream(connection.getInputStream());
                     byte[] incomingHandshake = (byte[]) in.readObject();
                     handShake decoded = handShake.decode(incomingHandshake);
+                    PeerID = decoded.getPeerId();
                     System.out.println("This is the header: " + decoded.getHeader());
                     System.out.println("This is the ID: " + decoded.getPeerId());
                     System.out.println("This is the zero bits length: " + decoded.getzerobitsLength());
@@ -504,12 +548,17 @@ public class peerProcess {
 
                 switch(decodedMessage.getType()){
                     case CHOKE:
+                    break;
 
                     case UNCHOKE:
+                    break;
 
                     case INTERESTED:
 
+                    break;
+
                     case NOT_INTERESTED:
+                    break;
 
 
                     
@@ -530,19 +579,32 @@ public class peerProcess {
                         break;
 
                     case BITFIELD:
-                    receivedbitField = BitSet.valueOf(decodedMessage.getPayload());
-                    //System.out.println("this is the length: " + receivedbitField.length());
-                    for(int i = 0; i < receivedbitField.length(); i++){
-                        if(receivedbitField.get(i) && !currPeer.getbitField().get(i)){
-                          //  System.out.println("found at value" + i);
-                           // System.out.println("buffer groverflow");
-                            requestMessage(i);
-                            break;
+                    System.out.println("get bitfiled msg");
 
-                        }
+                            receivedbitField = BitSet.valueOf(decodedMessage.getPayload());
+                           // BitSet bitfield = BitSet.valueOf(payload);
+                            peerBitfields.put(PeerID, receivedbitField);
+
+                            if(isInterestedInPeer(PeerID)){
+                                sendInterestedMessage();
+                            }
+                            else{
+                                sendNotInterestedMessage();
+                            }
+                            break;
+                  //  receivedbitField = BitSet.valueOf(decodedMessage.getPayload());
+                    //System.out.println("this is the length: " + receivedbitField.length());
+                    // for(int i = 0; i < receivedbitField.length(); i++){
+                    //     if(receivedbitField.get(i) && !currPeer.getbitField().get(i)){
+                    //       //  System.out.println("found at value" + i);
+                    //        // System.out.println("buffer groverflow");
+                    //         requestMessage(i);
+                    //         break;
+
+                    //     }
     
-                    }
-                    break;
+                    // }
+                    //break;
                     case PIECE:
                       //  System.out.println("I MADE IT TO PIECE");
                         payload = decodedMessage.getPayload();
@@ -553,16 +615,16 @@ public class peerProcess {
                         fileWrite.seek(fileOffset);
                         fileWrite.write(payload, 4, configInfo.getpieceSize());
                         currPeer.getbitField().set(offset);
-                        for(int i = 0; i < receivedbitField.length(); i++){
-                            if(receivedbitField.get(i) && !currPeer.getbitField().get(i)){
-                                //System.out.println("requested new at " + i);
-                                //System.out.println("buffer groverflow");
-                                requestMessage(i);
-                                break;
+                         for(int i = 0; i < receivedbitField.length(); i++){
+                             if(receivedbitField.get(i) && !currPeer.getbitField().get(i)){
+                                 System.out.println("requested new at " + i);
+                                System.out.println("buffer groverflow");
+                                 requestMessage(i);
+                                 break;
     
-                            }
+                             }
         
-                        }
+                         }
                         downloadRate++;
                         
                         
@@ -644,6 +706,13 @@ public class peerProcess {
                 sendMessage(toSend);
             
              }
+             public boolean isInterestedInPeer(int peerId) {
+                BitSet theirBitfield = peerBitfields.get(peerId);
+                BitSet ourBitfield = currPeer.getbitField();  
+                BitSet interestSet = (BitSet) theirBitfield.clone();
+                interestSet.andNot(ourBitfield);
+                return !interestSet.isEmpty();
+            }
 
                public  void pieceMessage(int i, byte[] pieceRequested ){
                 ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES + configInfo.getpieceSize());
@@ -655,8 +724,10 @@ public class peerProcess {
             
              }
              public  void sendInterestedMessage(){
-                Message message = new Message(MessageType.INTERESTED,null);
+                byte[] dummy = new byte[20];
+                Message message = new Message(MessageType.INTERESTED,dummy);
                 byte[] encodedMessage = message.encode();
+                System.out.println("message sent!");
                 sendMessage(encodedMessage);
 
              } public  void sendNotInterestedMessage(){
