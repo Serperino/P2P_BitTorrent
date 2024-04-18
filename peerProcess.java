@@ -15,6 +15,7 @@ import java.util.Scanner;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.util.Vector;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.io.OutputStream;
 import java.util.List;
@@ -179,6 +180,8 @@ public class peerProcess {
 		private int no;		//The index number of the client
         private byte[] payload;
         private int PeerID;
+        static HashMap<Integer, Integer> downloadRates = new HashMap<>();
+        int downloadRate;
 
 
         	public Handler(Socket connection, int no) {
@@ -197,7 +200,7 @@ public class peerProcess {
 			out = new ObjectOutputStream(connection.getOutputStream());
 			in = new ObjectInputStream(connection.getInputStream());
             sendHandshake();
-            //sleep(4000);
+            
 
             if(currPeer.hasFile() == 1){
               //  byte[] bitFieldconvert = currPeer.getbitField().toByteArray();
@@ -220,6 +223,9 @@ public class peerProcess {
                 System.out.println("do i get stuck here?");
                 byte[] incomingHandshake = (byte[]) in.readObject();
                 handShake decoded = handShake.decode(incomingHandshake);
+                downloadRates.put(decoded.getPeerId(), downloadRate);
+              
+
                 PeerID=decoded.getPeerId();
                 System.out.println("This is the header SERVERSIDE: " + decoded.getHeader());
                 System.out.println("SERVERS FILEDATA LENGTH:" +  fileData.length);
@@ -230,10 +236,16 @@ public class peerProcess {
 				while(true)
 				{
 
+                    for (Map.Entry<Integer, Integer> entry : downloadRates.entrySet()) {
+                        int peerId = entry.getKey();
+                        int rate = entry.getValue();
+                        System.out.println("Peer ID: " + peerId + ", Download Rate: " + rate);
+                    }
+                    sleep(2000);
                 byte[] incomingMessage = (byte[]) in.readObject();
                 Message decodedMessage = Message.decode(incomingMessage); // Create an instance and then call decode
                 payload=decodedMessage.getPayload();
-                System.out.println("oir do i get stuck here?");
+                System.out.println("or do i get stuck here?");
 
                     switch(decodedMessage.getType()){
                         case CHOKE:
@@ -279,18 +291,15 @@ public class peerProcess {
                         break;
 
                         case REQUEST:
-                       // System.out.println("request received");
                         ByteBuffer buffer = ByteBuffer.wrap(decodedMessage.getPayload());
                         int index = buffer.getInt();
                         System.out.println(index);
                         int offset = index * configInfo.getpieceSize();
                         byte[] requestedPiece = new byte[configInfo.getpieceSize()];
                         System.arraycopy(fileData, offset, requestedPiece, 0, configInfo.getpieceSize()); //https://www.geeksforgeeks.org/system-arraycopy-in-java/
-                       // Message message = new Message(MessageType.PIECE, requestedPiece);
                         pieceMessage(index, requestedPiece);
-                       // byte[] toSend = message.encode();
-                        //sendMessage(toSend);
-
+                        downloadRates.put(PeerID, downloadRate++);
+                        break;
                         case PIECE:
 
 
@@ -300,6 +309,9 @@ public class peerProcess {
                     
 				}
 			} catch (ClassNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (InterruptedException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
@@ -447,9 +459,12 @@ public class peerProcess {
         private ObjectInputStream in;	//stream read from the socket
         private  ObjectOutputStream out;    //stream write to the socket
 		private int no;		//The index number of the client
+        public int downloadRate;
         byte[] fileInfo;
         byte[] payload;
         BitSet receivedbitField;
+        static HashMap<Integer, Integer> downloadRates = new HashMap<>();
+
 
 
         public clientHandler(Socket connection, int no) {
@@ -534,9 +549,6 @@ public class peerProcess {
                         ByteBuffer buffer = ByteBuffer.wrap(payload);
                         int offset = buffer.getInt(); // Extract the offset from the first 4 bytes
                         int fileOffset = offset * configInfo.getpieceSize();
-                        //System.out.println("Offset: " + offset);
-                        //System.out.println(payload.length);
-                        //System.out.println(configInfo.getpieceSize());
                         System.arraycopy(payload, 4, fileData, fileOffset, configInfo.getpieceSize()); 
                         fileWrite.seek(fileOffset);
                         fileWrite.write(payload, 4, configInfo.getpieceSize());
@@ -551,6 +563,7 @@ public class peerProcess {
                             }
         
                         }
+                        downloadRate++;
                         
                         
                         //int filewritePosition = 
