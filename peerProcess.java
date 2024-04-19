@@ -11,10 +11,14 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.Scanner;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.util.Vector;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.io.OutputStream;
@@ -55,6 +59,11 @@ public class peerProcess {
     //track neighbors bitfield by bitfield msg and update by have msg.
     static HashMap<Integer, BitSet> peerBitfields = new HashMap<>();
     //update status interest or not
+    static Timer timer = new Timer();
+    static ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    static boolean interestShown;
+
+
 
 
     public static void main(String[] args) throws IOException{
@@ -207,11 +216,14 @@ public class peerProcess {
         private byte[] payload;
         byte[] fileInfo;
         BitSet receivedbitField;
+        static boolean chokeSent = false;
+        int test = 0;
         private int PeerID;
-        HashMap<Integer, Boolean> peerInterestStatus = new HashMap<>();  
-        HashMap<Integer, Integer> downloadRates = new HashMap<>();
-        List<Integer> interestedPeers = new ArrayList();
-        HashMap<Integer, Integer> highestdownloadRates = new HashMap<>();
+        static boolean timerRunning = false;
+        static HashMap<Integer, Boolean> peerInterestStatus = new HashMap<>();  
+        static HashMap<Integer, Integer> downloadRates = new HashMap<>();
+        static  List<Integer> interestedPeers = new ArrayList<>();
+        volatile HashMap<Integer, Integer> highestdownloadRates = new HashMap<>();
 
 
         int downloadRate;
@@ -228,7 +240,7 @@ public class peerProcess {
  		try
         {
             
-            System.out.println(connection);
+            //System.out.println(connection);
             RandomAccessFile fileWrite = new RandomAccessFile(fileName, "rw"); 
 			out = new ObjectOutputStream(connection.getOutputStream());
 			in = new ObjectInputStream(connection.getInputStream());
@@ -266,37 +278,97 @@ public class peerProcess {
                 System.out.println("This is the ID SERVERSIDE: " + decoded.getPeerId());
                 System.out.println("This is the zero bits length SERVERSIDE: " + decoded.getzerobitsLength());
 
+              //  private static final TimerTask task = new TimerTask()
+             
+            
+            // Start the TimerTask within your initializer
+         //   Timer timer = new Timer();
+          //  timer.scheduleAtFixedRate(new TimerTask() {
+            //    @Override
+             //   public void run() {
+
+
+                //FOR CALCULATING PEERS
+                 if(timerRunning == false){
+                     timerRunning = true;
+                    Timer timer = new Timer();
+                    timer.scheduleAtFixedRate(new TimerTask() {
+                        @Override
+                        public void run() {
+                            System.out.println(test);
+                            test++;
+                            interestedPeers = selectPreferredNeighbors();
+                         
+                                if(interestedPeers.size() >= configInfo.getnumNeighbors()){
+                                    if(currPeer.hasFile() == 1){
+    
+                                    }
+                                    System.out.println("do i make it here");
+                                    interestShown = true;
+                                    chokeSent = true;
+    
+    
+                                }
+                            
+                         
+                           // List<Map.Entry<Integer, Integer>> interestedpeersdownloadRates = new ArrayList<>();
+    
+    
+                            // for (Map.Entry<Integer, Boolean> entry : peerInterestStatus.entrySet()) {
+                            //     int peerID = entry.getKey();
+                            //     boolean isInterested = entry.getValue();
+                            //         if (isInterested && downloadRates.containsKey(peerID)) {
+                            //         highestdownloadRates.put(peerID, downloadRates.get(peerID));
+                            //         System.out.println("Peer " + peerID + " is interested.");
+                            //     }
+                            // }
+                         
+                            for (Map.Entry<Integer, Integer> entry : downloadRates.entrySet()) {
+                                int peerId = entry.getKey();
+                                int rate = entry.getValue();
+                                System.out.println("Peer ID: " + peerId + ", Download Rate: " + rate);
+                                
+                            }
+    
+    
+    
+    
+                        }
+                    }, 0, configInfo.getunchokeInterval() * 1000);
+                }
 
                 Timer timer = new Timer();
                 timer.scheduleAtFixedRate(new TimerTask() {
                     @Override
                     public void run() {
-                        //attempting to check top 4 download rates, will work on later
-                        // for (Map.Entry<Integer, Boolean> entry : peerInterestStatus.entrySet()) {
-                        //     int peerID = entry.getKey();
-                        //     boolean isInterested = entry.getValue();
-                        //         if (isInterested && downloadRates.containsKey(peerID)) {
-                        //         highestdownloadRates.put(peerID, downloadRates.get(peerID));
-                        //         System.out.println("Peer " + peerID + " is interested.");
-                        //     }
-                        // }
-
-                        Collections.sort(interestedPeers);
-
-                        for (Map.Entry<Integer, Integer> entry : downloadRates.entrySet()) {
-                            int peerId = entry.getKey();
-                            int rate = entry.getValue();
-                            System.out.println("Peer ID: " + peerId + ", Download Rate: " + rate);
+                        System.out.println(test);
+                        System.out.println("this is the PEERID" + PeerID);
+                        test++;
+                        for (int i = 0; i < interestedPeers.size(); i++) {
+                            Integer peer = interestedPeers.get(i);
+                            System.out.println("Interested peer: " + peer);
                         }
+                          if(interestedPeers.contains(PeerID)){
+                        System.out.println("am i ever here");
+                         interestShown = false;
+
+                         sendUnchoke();
+                     }
+                      
+
+
 
 
                     }
-                }, 0, configInfo.getunchokeInterval() * 1000); 
+                }, 0, configInfo.getunchokeInterval() * 1000);
+               
+               
                 
                
 
 				while(true)
 				{
+                 
 
                     // for (Map.Entry<Integer, Integer> entry : downloadRates.entrySet()) {
                     //     int peerId = entry.getKey();
@@ -304,6 +376,12 @@ public class peerProcess {
                     //     System.out.println("Peer ID: " + peerId + ", Download Rate: " + rate);
                     // }
                     //sleep(2000);
+                    // if(interestedPeers.contains(PeerID)){
+                    //     System.out.println("am i ever here");
+                    //     interestShown = false;
+
+                    //     sendUnchoke();
+                    // }
                 byte[] incomingMessage = (byte[]) in.readObject();
                 Message decodedMessage = Message.decode(incomingMessage); // Create an instance and then call decode
                 payload=decodedMessage.getPayload();
@@ -320,6 +398,7 @@ public class peerProcess {
                        
                         case INTERESTED:
                         updateInterestStatus(PeerID, true);
+                        interestShown = true;
                         System.out.println(PeerID + "is interested :D");
                         break;
                     
@@ -363,25 +442,6 @@ public class peerProcess {
                     // break;
                           //  System.out.println("get bitfiled msg");
                             
-                           
-                            // BitSet bitfield = BitSet.valueOf(payload);
-                            // peerBitfields.put(PeerID, bitfield);
-                            // for(int i = 0; i < bitfield.length(); i++){
-                            //     if(bitfield.get(i) && !currPeer.getbitField().get(i)){
-                            //         System.out.println("requested new at " + i);
-                            //        System.out.println("buffer groverflow");
-                            //         requestMessage(i);
-                            //         break;
-       
-                            //     }
-           
-                            // }
-                            // // if(isInterestedInPeer(PeerID)){
-                            // //     sendInterestedMessage();
-                            // // }
-                            // // else{
-                            // //     sendNotInterestedMessage();}
-                            // break;
 
 
                         case HAVE:
@@ -501,11 +561,26 @@ public class peerProcess {
         sendMessage(handshakeBytes);
 
      } 
+     public   void sendUnchoke(){
+        byte[] dummy = new byte[20];
+        Message message = new Message(MessageType.UNCHOKE,dummy);
+        byte[] encodedMessage = message.encode();
+        sendMessage(encodedMessage);
+     } 
+     public   void choke(){
+        byte[] dummy = new byte[20];
+        Message message = new Message(MessageType.CHOKE,dummy);
+        byte[] encodedMessage = message.encode();
+        sendMessage(encodedMessage);
+     } 
+
 
      public void updateInterestStatus(int PeerID, boolean isInterested) {
+        System.out.println("putting" + PeerID);
         peerInterestStatus.put(PeerID, isInterested);
     }
     public boolean isPeerLiked(int PeerID) {
+        System.out.println(PeerID + "IN ISPEERLIKED");
         return peerInterestStatus.getOrDefault(PeerID, false);
     }
     public  void sendInterestedMessage(){
@@ -569,8 +644,8 @@ public class peerProcess {
      public List<Integer> selectPreferredNeighbors() {
         List<Integer> preferredNeighbors = new ArrayList<>();
         for (Integer peerId : peerInterestStatus.keySet()) {
-            if (isPeerLiked(PeerID)) {
-                preferredNeighbors.add(PeerID);
+            if (isPeerLiked(peerId)) {
+                preferredNeighbors.add(peerId);
             }
         }
        //need add sort by download rate or update rate.

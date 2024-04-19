@@ -11,7 +11,7 @@ public class test {
         System.out.println("Optimistic Unchoking Interval: " + loader.getoptimisticInterval());
         System.out.println("File Name: " + loader.getfileName());
         System.out.println("File Size: " + loader.getfileSize());
-        System.out.println("Piece Size: " + loader.pieceSize());
+       // System.out.println("Piece Size: " + loader.pieceSize());
 
         for (Integer peerID : loader.getpeerMap().keySet()) {
             Peer peer = loader.getpeerMap().get(peerID);
