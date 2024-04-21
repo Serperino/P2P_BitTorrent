@@ -7,6 +7,7 @@ public enum MessageType {
     BITFIELD(5),
     REQUEST(6),
     PIECE(7);
+   // END(8);
 
     private final int value;
 

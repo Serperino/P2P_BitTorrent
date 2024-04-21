@@ -17,7 +17,7 @@ public class fileLoader {
     private static int totalPieces;
     Message message;
     handShake handshake;
-    private HashMap<Integer, Peer> peersinNetwork;
+    HashMap<Integer, Peer> peersinNetwork;
     
     
     public fileLoader()
@@ -53,11 +53,14 @@ public class fileLoader {
                 //Uses the label to read what info is being read in from cfg file
                 switch(label)
                 {
-                    case "NumberofPreferredNeighbors":
+                    case "NumberOfPreferredNeighbors":
                         this.numNeighbors = Integer.parseInt(value);
+                        System.out.println("this is num nieghbors" + this.numNeighbors);
                         break;
                     case "UnchokingInterval":
                         this.unchokeInterval = Integer.parseInt(value);
+                        System.out.println("this is unchokje interval" + this.unchokeInterval);
+
                         break;
                     case "OptimisticUnchokingInterval":
                         this.optimisticInterval = Integer.parseInt(value);
@@ -111,8 +114,9 @@ public class fileLoader {
                     {
                         int peerID = Integer.parseInt(parts[0]);
                         String hostName = parts[1];
-                        String port = parts[2];
+                        int port = Integer.parseInt(parts[2]);
                         int hasFile = Integer.parseInt(parts[3]);
+                        System.out.println("The port for" + peerID + "is" + port);
                         this.peersinNetwork.put(peerID, new Peer(peerID, hostName, port, hasFile, totalPieces));
 
                     }
@@ -144,6 +148,8 @@ public class fileLoader {
     {
         return numNeighbors;
     }
+
+
 
 
 

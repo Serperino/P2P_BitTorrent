@@ -10,7 +10,7 @@ public class Peer {
     //All attributes a peer has
     private int peerID;
     private String hostName;
-    private String port;
+    private int port;
     private int hasFile;
     private fileLoader info;
     private ServerSocket serverSocket;
@@ -19,7 +19,7 @@ public class Peer {
     private Server server;
     private Thread listenThread;
     //public byte[] bitField;
-    public BitSet bitField;
+    static public BitSet bitField;
     Vector<Peer> activeNeighbors = new Vector<Peer>();
 
 
@@ -37,7 +37,7 @@ public class Peer {
                 ", hasFile=" + hasFile +
                 '}';
     }
-    public Peer(int peerID, String hostName, String port, int hasFile, int totalPieces)
+    public Peer(int peerID, String hostName, int port, int hasFile, int totalPieces)
     {
         this.peerID = peerID;
         this.hostName = hostName;
@@ -84,7 +84,7 @@ public class Peer {
 
 
 
-    public String getportNumber()
+    public int getportNumber()
     {
         return port;
     }
