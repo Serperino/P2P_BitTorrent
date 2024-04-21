@@ -66,6 +66,8 @@ public class peerProcess {
     static boolean interestShown;
     static List<Integer> unchokedPeers = new ArrayList<>();
     static List<Integer> peers = new ArrayList<>();
+    static logWriter peerLog = null;
+
 
 
 
@@ -87,15 +89,19 @@ public class peerProcess {
              Integer inputID = Integer.parseInt(args[0]);
              peerVerifier(inputID);
              System.out.println("Running peer: " + currPeer.getpeerID());
+              peerLog = new logWriter(currPeer.getpeerID());
+              
              if(currPeer.hasFile() == 1){
                 currPeer.bitField.set(0, fileLoader.gettotalPieces());
                 String folderName = "peer_" + currPeer.getpeerID();
                 loadFile(folderName);
                 System.out.println("server FILE DATA LENGTH:" + fileData.length);    
                 fileName = "peer_" + currPeer.getpeerID() + "/" + configInfo.getfileName();
+              
 
              }
              else {
+                
                 fileData = new byte[configInfo.getfileSize()];
                 System.out.println("CLIENT FILE DATA LENGTH:" + fileData.length);
                 fileName = "peer_" + currPeer.getpeerID() + "/" + configInfo.getfileName();
@@ -131,6 +137,9 @@ public class peerProcess {
             System.out.println("socket at" + workingPeer.getportNumber());
             new Handler(requestSocket, workingPeer.getportNumber()).start();
             System.out.println("Connected to " + peerID);
+            System.out.println("CURRENT PEER ID" + currPeer.getpeerID());
+
+            peerLog.logConnection((int)peerID, currPeer.getpeerID());
           
 
             }
@@ -205,6 +214,7 @@ public class peerProcess {
                    }
                 Peer serverstartPeer = configInfo.getpeerMap().get(peerID);
                 new Handler(acceptingConnections.accept(), serverstartPeer.getportNumber()).start();
+                peerLog.logConnection((int)peerID, currPeer.getpeerID());
 				System.out.println("Client "  + (peerID)+ " is connected!");
     
             }
@@ -226,15 +236,19 @@ public class peerProcess {
 		private int no;		//The index number of the client
         private byte[] payload;
         byte[] fileInfo;
-        volatile BitSet receivedbitField;
+        int downloadsatZero = 0;
+        int totalDownloads = 0;
+         BitSet receivedbitField;
         static boolean chokeSent = false;
         int test = 0;
         boolean unchoked = false;
         private int PeerID;
         int pieceOffset;
+        boolean bitfieldSent = false;
         int fileOffset;
+        static int piecesHeld = 0;
         boolean hasFile;
-         int iterations = 0;
+        int iterations = 0;
         int total = 0;
         static boolean filestoExchange = true;
         Timer optTimer = new Timer();
@@ -266,27 +280,26 @@ public class peerProcess {
  		try
         {
 
+          //  receivedbitField = new BitSet(configInfo.gettotalPieces());
             //System.out.println(connection);
             RandomAccessFile fileWrite = new RandomAccessFile(fileName, "rw"); 
 			out = new ObjectOutputStream(connection.getOutputStream());
 			in = new ObjectInputStream(connection.getInputStream());
             sendHandshake();
             
-
+            
             if(currPeer.hasFile() == 1 || !currPeer.getbitField().isEmpty()){
+                bitfieldSent = true;
                 hasFile = true;
               //  byte[] bitFieldconvert = currPeer.getbitField().toByteArray();
-                System.out.println("Sending bitfield connection to " + connection);
                 Message message = new Message(MessageType.BITFIELD, currPeer.getbitField().toByteArray());
                 byte[] toSend = message.encode();
-                System.out.println(toSend.length);
                 out.writeObject(toSend);
                 out.flush(); // Flush the stream to ensure all data is sent
               //  System.out.println("File data sent successfully.");
                 //out.writeObject(currPeer.getbitField());
                 //out.flush(); // Flush the stream to ensure all data is sent
             }
-            System.out.println("or do i make it out?");
            // System.out.println(currPeer.hasFile());
            // in = new ObjectInputStream(connection.getInputStream());
             
@@ -337,7 +350,11 @@ public class peerProcess {
                                     everyonehasEverything = true;
                                 }
                                 else{
+                               //     System.out.println( currPeer.getbitField());
+                                //    System.out.println( "peer" + id + bitSet);
+                                    
                                     everyonehasEverything = false;
+                                    break;
                                 }
         
                             }        
@@ -349,11 +366,14 @@ public class peerProcess {
                         }
                     
                               
-                    if(everyonehasEverything == true && iterations == 2){
+                    if(everyonehasEverything == true && iterations == 2 || downloadsatZero >= 3){
                         try {
                             System.out.println("All users have all files, Disconnecting...");
-                            sleep(4000);
-                            
+                            sleep(8000);
+                            if(currPeer.hasFile() == 1){
+                                int lastIndex = peers.size() - 1;
+                                peers.remove(lastIndex);
+                            }
                             for(int peer : peers){
                                 System.out.println("Disconnected from: " + peer);
                             }
@@ -430,13 +450,11 @@ public class peerProcess {
                             //     }
                             // }
                             interestedPeers = selectPreferredNeighbors();
-                            System.out.println("INTERESTED PEERS SIZE:" + interestedPeers.size());
-                            // if(interestedPeers.size() == 0){
-                            //     iterations++;
-                            // }
-                            // else{
-                            //     iterations = 0;
-                            // }
+                            if(!interestedPeers.isEmpty()){
+                                peerLog.preferredNeighbors(interestedPeers);
+
+                            }
+                          
                             
                          
                                 if(interestedPeers.size() >= configInfo.getnumNeighbors()){
@@ -452,19 +470,29 @@ public class peerProcess {
                             
                          
                         
-                         
+                                totalDownloads = 0;
                             for (Map.Entry<Integer, Integer> entry : downloadRates.entrySet()) {
                                 int peerId = entry.getKey();
                                 int rate = entry.getValue();
                                 chosenforDownload.add(peerId);
+                                totalDownloads += rate;
 
                                 System.out.println("Peer ID: " + peerId + ", Download Rate: " + rate);
+                                System.out.println(totalDownloads);
                                 
+                            }
+                            if(totalDownloads == 0){
+                                downloadsatZero += 1;
+                                System.out.println(downloadsatZero);
+                            }
+                            else{
+                                downloadsatZero = 0;
                             }
                             for (Map.Entry<Integer, Integer> entry : downloadRates.entrySet()) {
                                 int peerId = entry.getKey();
                                 chosenforDownload.add(peerId);
                                 entry.setValue(0);
+
                             }
     
     
@@ -489,9 +517,23 @@ public class peerProcess {
                                 Random optunchoke = new Random();
                                 int randomIndex = optunchoke.nextInt(tobeoptimisticallyUnchoked.size());
                                 int randomElement = tobeoptimisticallyUnchoked.get(randomIndex);
+                                peerLog.logoptimisticUnchoke(PeerID);
                                 sendUnchoke();
                                 
+                                
+                            }
+                            else{
+                                if(interestedPeers.size() != 0 && !interestedPeers.isEmpty() & tobeoptimisticallyUnchoked.size() != 0){
+                                    Random optunchoke = new Random();
+                                    int randomIndex = optunchoke.nextInt(interestedPeers.size());
+                                    int randomElement = interestedPeers.get(randomIndex);
+                                    int tobeLogged = tobeoptimisticallyUnchoked.get(randomElement);
+                                    int toUnchoke = tobeoptimisticallyUnchoked.get(randomElement);
+                                    peerLog.logoptimisticUnchoke(PeerID);
+                                    sendUnchoke();
+                                }
                                
+
                             }
                            
                             
@@ -503,47 +545,28 @@ public class peerProcess {
                 sendChoke.scheduleAtFixedRate(new TimerTask() {
                     @Override
                     public void run() {
-                        // for (Map.Entry<Integer, BitSet> entry : peerBitfields.entrySet()) {
-                        //     int id = entry.getKey(); // Get the ID
-                        //     BitSet bitSet = entry.getValue(); // Get the bitset
-                        //     for(int i = 0; i < configInfo.gettotalPieces(); i++){
-                        //     if( currPeer.getbitField().get(i) && bitSet.get(i)){
-                        //         everyonehasEverything = true;
-                        //     }
-                        //     else{
-                        //         everyonehasEverything = false;
-                        //     }
-    
-                        // }        
-                      
-                        //  }
-                        
-                     //  else{
-                        // if(everyonehasEverything == true && iterations == 2){
-                        //     System.out.println("weiner");
-                        // }
                        
-                            System.out.println(test);
-                        System.out.println("this is the PEERID" + PeerID);
+                        
+                    
+                       
+                         
                             for (int i = 0; i < interestedPeers.size(); i++) {
                                 Integer peer = interestedPeers.get(i);
-                                System.out.println("Interested peer: " + peer);
                                 if(!interestedPeers.isEmpty()){
                                 if(interestedPeers.contains(PeerID)){
-                                    System.out.println("ADDING" + PeerID);
                                      interestShown = false;
                                      unchokedPeers.add(PeerID);
             
                                      sendUnchoke();
+                                     break;
                                  }
-                                //  else {
-                                //   if(interestedPeers.size() > configInfo.getnumNeighbors()){
-                                //     System.out.println(configInfo.getnumNeighbors() + "this is the num neighbors");
-                                //     System.out.println("HOW IS THIS CHOKING HAPPENING" +interestedPeers.size());
-                                //     sendChoke();
-                                //   }
+                                 else {
+                                  if(interestedPeers.size() > configInfo.getnumNeighbors()){
+                                    sendChoke();
+                                    break;
+                                  }
                                     
-                                //  }
+                                 }
                                 }
                                   
                             }
@@ -578,23 +601,25 @@ public class peerProcess {
                 byte[] incomingMessage = (byte[]) in.readObject();
                 Message decodedMessage = Message.decode(incomingMessage); // Create an instance and then call decode
                 payload=decodedMessage.getPayload();
-               System.out.println(decodedMessage.getType());
+               //System.out.println(decodedMessage.getType());
 
                     switch(decodedMessage.getType()){
                         case CHOKE:
-                        System.out.println("get choke msg FROM" + PeerID);
+                        peerLog.logChoke(PeerID);
+                       // System.out.println("get choke msg FROM" + PeerID);
                         unchoked = false;
                         break;
 
                         case UNCHOKE:
-                        System.out.println("get no choke msg");
+                        peerLog.logUnchoke(PeerID);
+                       // System.out.println("get no choke msg");
                         if(unchoked){
                             continue;
                         }
                         else { 
                             unchoked = true;
                         if(!hasFile){
-                            System.out.println("DO I MAKE IT IN HERE AT ALL");
+                          //  System.out.println("DO I MAKE IT IN HERE AT ALL");
                          ArrayList<Integer> unchokeavailablePieces = new ArrayList<>();
                          for(int i = 0; i < receivedbitField.length(); i++){
                              if(receivedbitField.get(i) && !currPeer.getbitField().get(i)){
@@ -608,7 +633,7 @@ public class peerProcess {
                          Random random = new Random();
                          //int randomunchokeIndex = random.nextInt(unchokeavailablePieces.size());
                          int randomunchokeIndex = random.nextInt(unchokeavailablePieces.size());
-                         System.out.println("THE RANDOM UNCHOKE INDEX" + randomunchokeIndex);
+                        // System.out.println("THE RANDOM UNCHOKE INDEX" + randomunchokeIndex);
                          int randomPiece = unchokeavailablePieces.get(randomunchokeIndex);
                         //  System.out.println("requested new at " + randomunchokeIndex);
                           //System.out.println("buffer groverflow");
@@ -621,21 +646,25 @@ public class peerProcess {
                     }
                         case INTERESTED:
                         updateInterestStatus(PeerID, true);
+                        peerLog.logInterested(PeerID);
                         interestShown = true;
-                        System.out.println(PeerID + "is interested :D");
+                        System.out.println(PeerID + "is interested ");
                         break;
                     
                         case NOT_INTERESTED:
+                        peerLog.lognotInterested(PeerID);
                         updateInterestStatus(PeerID, false);
-                        System.out.println(PeerID + "is NOT interested :[");
+                        System.out.println(PeerID + "is NOT interested ");
                         break;
                         
                         case BITFIELD:
                         System.out.println("get bitfiled msg");
 
                         receivedbitField = BitSet.valueOf(decodedMessage.getPayload());
-                        BitSet bitfield = BitSet.valueOf(payload);
                         peerBitfields.put(PeerID, receivedbitField);
+                        //System.out.println("RECEIVED BITFIELD IN BITFIELD" + receivedbitField);
+                        //System.out.println("RECEIVED VARIABLE AFTER IN BITFIELD" + bitfield);
+
                         
                         
                         if(isInterestedInPeer(PeerID)){
@@ -651,18 +680,33 @@ public class peerProcess {
 
 
                         case HAVE:
-                        receivedbitField = BitSet.valueOf(decodedMessage.getPayload());
-                        BitSet havebitfield = BitSet.valueOf(payload);
-                        peerBitfields.put(PeerID, receivedbitField);
-                        if(!hasFile){
-                            if(isInterestedInPeer(PeerID)){
-                                sendInterestedMessage();
+                        //if(!hasFile){
+                            ByteBuffer haveBuffer = ByteBuffer.wrap(payload);
+                            pieceOffset = haveBuffer.getInt();
+                           //  System.out.println("AT PEER" + PeerID);
+                            // System.out.println("have bitfield" + pieceOffset);
+                            BitSet haveBits = BitSet.valueOf(decodedMessage.getPayload());
+                            //BitSet havebitfield = BitSet.valueOf(payload);
+                           
+                            peerBitfields.put(PeerID, haveBits);
+                            payload = decodedMessage.getPayload();
+                            //ByteBuffer haveBuffer = ByteBuffer.wrap(payload);
+                             //pieceOffset = haveBuffer.getInt();
+                            // System.out.println(pieceOffset);
+                            //System.out.println(receivedbitField);
+                             receivedbitField.set(pieceOffset);
+                            peerLog.logHave(PeerID, pieceOffset);
+                            if(!hasFile){
+                                if(isInterestedInPeer(PeerID)){
+                                    sendInterestedMessage();
+                                }
+                                else{
+                                    sendNotInterestedMessage();
+                                }
                             }
-                            else{
-                                sendNotInterestedMessage();
-                            }
-                        }
-                       
+                           
+                        //}
+                        peerLog.logHave(PeerID, pieceOffset);
                         break;
 
                         case REQUEST:
@@ -674,7 +718,6 @@ public class peerProcess {
 
                         if(index == (configInfo.getfileSize()/configInfo.getpieceSize())){
                             int fileLength = configInfo.getfileSize() - offset;
-                            //System.out.println("IS THIS 4002 OR WHATEVER IT WAS SUPPOSED TO BE" + (configInfo.getfileSize() - offset));
                             requestedPiece = new byte[fileLength];
                          //   System.out.println("file offset" + offset);
                           //  System.out.println("TOTAL SIZE:" + fileData.length);
@@ -709,6 +752,8 @@ public class peerProcess {
                             System.arraycopy(payload, 4, fileData, fileOffset, bytes); 
                             fileWrite.seek(fileOffset);
                             fileWrite.write(payload, 4, configInfo.getpieceSize());
+                            piecesHeld++;
+                            peerLog.logDownload(PeerID, pieceOffset, piecesHeld);
                           //  System.out.println("ONLY NUMBER PRESENT IN CURRpEER SHOULD BE THIS" + pieceOffset);
                             currPeer.getbitField().set(pieceOffset);
                          }
@@ -716,13 +761,30 @@ public class peerProcess {
                             System.arraycopy(payload, 4, fileData, fileOffset, configInfo.getpieceSize()); 
                             fileWrite.seek(fileOffset);
                             fileWrite.write(payload, 4, configInfo.getpieceSize());
+                            piecesHeld++;
+                            peerLog.logDownload(PeerID, pieceOffset, piecesHeld);
+                            if(configInfo.gettotalPieces() == piecesHeld){
+                                peerLog.logFinished();
+
+                            }
                             //System.out.println("ONLY NUMBER PRESENT IN CURRpEER SHOULD BE THIS" + pieceOffset);
                             currPeer.getbitField().set(pieceOffset);
-                            Message message = new Message(MessageType.HAVE, currPeer.getbitField().toByteArray());
-                            byte[] toSend = message.encode();
+                            System.out.println(pieceOffset);
+                            if(bitfieldSent){
+                                sendhaveMessage(pieceOffset);
+                            }
+                            else{
+                                Message message = new Message(MessageType.BITFIELD, currPeer.getbitField().toByteArray());
+                                byte[] toSend = message.encode();
+                                out.writeObject(toSend);
+                                out.flush();
+                                bitfieldSent = true; 
+                            }
+                          //  Message message = new Message(MessageType.HAVE, currPeer.getbitField().toByteArray());
+                          //  byte[] toSend = message.encode();
                             //System.out.println(toSend.length);
-                             out.writeObject(toSend);
-                             out.flush(); 
+                           //  out.writeObject(toSend);
+                            // out.flush(); 
                          }
                   
 
@@ -859,6 +921,16 @@ public class peerProcess {
         byte[] encodedMessage = message.encode();
         sendMessage(encodedMessage);
         updateInterestStatus(PeerID, false);
+
+     }
+     public   void sendhaveMessage(int offset){
+        ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
+        System.out.println("SENDING" + offset);
+        buffer.putInt(offset);
+        byte[] payload = buffer.array();
+        Message message = new Message(MessageType.HAVE,payload);
+        byte[] encodedMessage = message.encode();
+        sendMessage(encodedMessage);
 
      }
      
