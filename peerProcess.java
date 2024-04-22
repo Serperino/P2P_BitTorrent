@@ -95,7 +95,6 @@ public class peerProcess {
                 currPeer.bitField.set(0, fileLoader.gettotalPieces());
                 String folderName = "peer_" + currPeer.getpeerID();
                 loadFile(folderName);
-                System.out.println("server FILE DATA LENGTH:" + fileData.length);    
                 fileName = "peer_" + currPeer.getpeerID() + "/" + configInfo.getfileName();
               
 
@@ -103,9 +102,8 @@ public class peerProcess {
              else {
                 
                 fileData = new byte[configInfo.getfileSize()];
-                System.out.println("CLIENT FILE DATA LENGTH:" + fileData.length);
                 fileName = "peer_" + currPeer.getpeerID() + "/" + configInfo.getfileName();
-                System.out.println(fileName);
+                //System.out.println(fileName);
              }
             beginListening();
              beginSearching();
@@ -132,12 +130,13 @@ public class peerProcess {
             String address = workingPeer.gethostName();
             //System.out.println("i break here?" + peerID);
             //requestSocket = new Socket("localhost", peerID);
-            System.out.println("port number:" + workingPeer.getportNumber());
-            requestSocket = new Socket("localhost", workingPeer.getportNumber());
-            System.out.println("socket at" + workingPeer.getportNumber());
+         //   System.out.println(address);
+           // System.out.println("port number:" + workingPeer.getportNumber());
+            requestSocket = new Socket(address, workingPeer.getportNumber());
+          //  System.out.println("socket at" + workingPeer.getportNumber());
             new Handler(requestSocket, workingPeer.getportNumber()).start();
             System.out.println("Connected to " + peerID);
-            System.out.println("CURRENT PEER ID" + currPeer.getpeerID());
+          //  System.out.println("CURRENT PEER ID" + currPeer.getpeerID());
 
             peerLog.logConnection((int)peerID, currPeer.getpeerID());
           
@@ -200,7 +199,7 @@ public class peerProcess {
     public static void serverStart() throws IOException
     {
         acceptingConnections = new ServerSocket(currPeer.getportNumber());
-        System.out.println("ServerSocket opened at ID: " + currPeer.getpeerID());
+        System.out.println("ServerSocket opened at ID: " + currPeer.getportNumber());
         System.out.println("The server is running."); 
         //Going to have to get the start of a map to determine how many connections have to be made as the rubric says
         //this will happen later though.
@@ -314,6 +313,7 @@ public class peerProcess {
               
 
                 PeerID=decoded.getPeerId();
+                System.out.println("Handshake received from " + PeerID);
                
               //  System.out.println("current bitfield in " + PeerID + currPeer.getbitField());
                // System.out.println("I AM A HOST TO " + PeerID);
@@ -366,7 +366,7 @@ public class peerProcess {
                         }
                     
                               
-                    if(everyonehasEverything == true && iterations == 2 || downloadsatZero >= 3){
+                    if(everyonehasEverything == true && iterations == 2 || downloadsatZero >= 3 && hasFile){
                         try {
                             System.out.println("All users have all files, Disconnecting...");
                             sleep(8000);
@@ -461,7 +461,6 @@ public class peerProcess {
                                     if(currPeer.hasFile() == 1){
     
                                     }
-                                    System.out.println("do i make it here");
                                     interestShown = true;
                                     chokeSent = true;
     
@@ -478,12 +477,11 @@ public class peerProcess {
                                 totalDownloads += rate;
 
                                 System.out.println("Peer ID: " + peerId + ", Download Rate: " + rate);
-                                System.out.println(totalDownloads);
                                 
                             }
                             if(totalDownloads == 0){
                                 downloadsatZero += 1;
-                                System.out.println(downloadsatZero);
+                              //  System.out.println(downloadsatZero);
                             }
                             else{
                                 downloadsatZero = 0;
@@ -648,17 +646,17 @@ public class peerProcess {
                         updateInterestStatus(PeerID, true);
                         peerLog.logInterested(PeerID);
                         interestShown = true;
-                        System.out.println(PeerID + "is interested ");
+                        System.out.println(PeerID + " is interested ");
                         break;
                     
                         case NOT_INTERESTED:
                         peerLog.lognotInterested(PeerID);
                         updateInterestStatus(PeerID, false);
-                        System.out.println(PeerID + "is NOT interested ");
+                        System.out.println(PeerID + " is NOT interested ");
                         break;
                         
                         case BITFIELD:
-                        System.out.println("get bitfiled msg");
+                        //System.out.println("get bitfiled msg");
 
                         receivedbitField = BitSet.valueOf(decodedMessage.getPayload());
                         peerBitfields.put(PeerID, receivedbitField);
@@ -769,7 +767,7 @@ public class peerProcess {
                             }
                             //System.out.println("ONLY NUMBER PRESENT IN CURRpEER SHOULD BE THIS" + pieceOffset);
                             currPeer.getbitField().set(pieceOffset);
-                            System.out.println(pieceOffset);
+                         //   System.out.println(pieceOffset);
                             if(bitfieldSent){
                                 sendhaveMessage(pieceOffset);
                             }
@@ -880,7 +878,7 @@ public class peerProcess {
 
     public   void sendHandshake(){
         handShake newShake = new handShake(currPeer.getpeerID());
-        System.out.println(currPeer.getpeerID());
+     //   System.out.println(currPeer.getpeerID());
         byte[] handshakeBytes = newShake.encode();
         sendMessage(handshakeBytes);
 
@@ -900,11 +898,11 @@ public class peerProcess {
 
 
      public void updateInterestStatus(int PeerID, boolean isInterested) {
-        System.out.println("UPDATING INTEREST STATUS FOR" + PeerID);
+        System.out.println("Updating interest status for" + PeerID);
         peerInterestStatus.put(PeerID, isInterested);
     }
     public boolean isPeerLiked(int PeerID) {
-        System.out.println(PeerID + "IN ISPEERLIKED");
+       // System.out.println(PeerID + "IN ISPEERLIKED");
         return peerInterestStatus.getOrDefault(PeerID, false);
     }
     public  void sendInterestedMessage(){
@@ -925,7 +923,7 @@ public class peerProcess {
      }
      public   void sendhaveMessage(int offset){
         ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
-        System.out.println("SENDING" + offset);
+     //   System.out.println("SENDING" + offset);
         buffer.putInt(offset);
         byte[] payload = buffer.array();
         Message message = new Message(MessageType.HAVE,payload);
@@ -995,160 +993,160 @@ public class peerProcess {
 
 
     // same handler as before but now for the client
-    private static class clientHandler extends Thread {
-        private String message;    //message received from the client
-		private String MESSAGE;    //uppercase message send to the client
-		private Socket connection;
-        private ObjectInputStream in;	//stream read from the socket
-        private  ObjectOutputStream out;    //stream write to the socket
-		private int no;		//The index number of the client
-        public int downloadRate;
-        byte[] fileInfo;
-        byte[] payload;
-        BitSet receivedbitField;
-        static HashMap<Integer, Integer> downloadRates = new HashMap<>();
-        private int PeerID;
+    // private static class clientHandler extends Thread {
+    //     private String message;    //message received from the client
+	// 	private String MESSAGE;    //uppercase message send to the client
+	// 	private Socket connection;
+    //     private ObjectInputStream in;	//stream read from the socket
+    //     private  ObjectOutputStream out;    //stream write to the socket
+	// 	private int no;		//The index number of the client
+    //     public int downloadRate;
+    //     byte[] fileInfo;
+    //     byte[] payload;
+    //     BitSet receivedbitField;
+    //     static HashMap<Integer, Integer> downloadRates = new HashMap<>();
+    //     private int PeerID;
 
 
 
 
-        public clientHandler(Socket connection, int no) {
-            this.connection = connection;
-        this.no = no;
-    }
-    public void run()
-         {
-            try {
-                System.out.println(fileName);
-                RandomAccessFile fileWrite = new RandomAccessFile(fileName, "rw"); //https://stackoverflow.com/questions/22020447/write-a-number-to-fileoutputstream-after-an-offset
-                out = new ObjectOutputStream(connection.getOutputStream());
-                out.flush();
-                in = new ObjectInputStream(connection.getInputStream());
+    //     public clientHandler(Socket connection, int no) {
+    //         this.connection = connection;
+    //     this.no = no;
+    // }
+    // public void run()
+    //      {
+    //         try {
+    //             System.out.println(fileName);
+    //             RandomAccessFile fileWrite = new RandomAccessFile(fileName, "rw"); //https://stackoverflow.com/questions/22020447/write-a-number-to-fileoutputstream-after-an-offset
+    //             out = new ObjectOutputStream(connection.getOutputStream());
+    //             out.flush();
+    //             in = new ObjectInputStream(connection.getInputStream());
                
-			//in = new ObjectInputStream(connection.getInputStream());
-                    byte[] incomingHandshake = (byte[]) in.readObject();
-                    handShake decoded = handShake.decode(incomingHandshake);
-                    PeerID = decoded.getPeerId();
-                    System.out.println("This is the header: " + decoded.getHeader());
-                    System.out.println("This is the ID: " + decoded.getPeerId());
-                    System.out.println("This is the zero bits length: " + decoded.getzerobitsLength());
-                    handShake newShake = new handShake(currPeer.getpeerID());
-                    byte[] handshakeBytes = newShake.encode();
-                    out.writeObject(handshakeBytes);
-                    out.flush();
-            try
-            {
-                while(true)
-				{
-               // sleep(5000);
-                //System.out.println("do i hit this twice or something?");
-                byte[] incomingMessage = (byte[]) in.readObject();
-                Message decodedMessage = Message.decode(incomingMessage); // Create an instance and then call decode
-               // System.out.println("is this printing anything??");
-                System.out.println(decodedMessage.getType());
-               // System.out.println("is this printing anything??");
+	// 		//in = new ObjectInputStream(connection.getInputStream());
+    //                 byte[] incomingHandshake = (byte[]) in.readObject();
+    //                 handShake decoded = handShake.decode(incomingHandshake);
+    //                 PeerID = decoded.getPeerId();
+    //                 System.out.println("This is the header: " + decoded.getHeader());
+    //                 System.out.println("This is the ID: " + decoded.getPeerId());
+    //                 System.out.println("This is the zero bits length: " + decoded.getzerobitsLength());
+    //                 handShake newShake = new handShake(currPeer.getpeerID());
+    //                 byte[] handshakeBytes = newShake.encode();
+    //                 out.writeObject(handshakeBytes);
+    //                 out.flush();
+    //         try
+    //         {
+    //             while(true)
+	// 			{
+    //            // sleep(5000);
+    //             //System.out.println("do i hit this twice or something?");
+    //             byte[] incomingMessage = (byte[]) in.readObject();
+    //             Message decodedMessage = Message.decode(incomingMessage); // Create an instance and then call decode
+    //            // System.out.println("is this printing anything??");
+    //             System.out.println(decodedMessage.getType());
+    //            // System.out.println("is this printing anything??");
 
-                switch(decodedMessage.getType()){
-                    case CHOKE:
-                    break;
+    //             switch(decodedMessage.getType()){
+    //                 case CHOKE:
+    //                 break;
 
-                    case UNCHOKE:
-                    break;
+    //                 case UNCHOKE:
+    //                 break;
 
-                    case INTERESTED:
+    //                 case INTERESTED:
 
-                    break;
+    //                 break;
 
-                    case NOT_INTERESTED:
-                    break;
+    //                 case NOT_INTERESTED:
+    //                 break;
 
 
                     
-                    //get have msg from peers, check the payload with our bitfield, if we have not the piece, send Interest msg, else no interest.
-                    case HAVE:
-                        payload = decodedMessage.getPayload();                   
-                        ByteBuffer payloadBuffer = ByteBuffer.wrap(payload);
-                        int pieceIndex = payloadBuffer.getInt();
+    //                 //get have msg from peers, check the payload with our bitfield, if we have not the piece, send Interest msg, else no interest.
+    //                 case HAVE:
+    //                     payload = decodedMessage.getPayload();                   
+    //                     ByteBuffer payloadBuffer = ByteBuffer.wrap(payload);
+    //                     int pieceIndex = payloadBuffer.getInt();
 
-                        if (!currPeer.getbitField().get(pieceIndex)) {
+    //                     if (!currPeer.getbitField().get(pieceIndex)) {
                             
-                            sendInterestedMessage();
+    //                         sendInterestedMessage();
 
-                        } else {
+    //                     } else {
                             
-                            sendNotInterestedMessage();
-                        }
-                        break;
+    //                         sendNotInterestedMessage();
+    //                     }
+    //                     break;
 
-                    case BITFIELD:
-                    System.out.println("get bitfiled msg");
+    //                 case BITFIELD:
+    //                 System.out.println("get bitfiled msg");
 
-                            receivedbitField = BitSet.valueOf(decodedMessage.getPayload());
-                           // BitSet bitfield = BitSet.valueOf(payload);
-                            peerBitfields.put(PeerID, receivedbitField);
+    //                         receivedbitField = BitSet.valueOf(decodedMessage.getPayload());
+    //                        // BitSet bitfield = BitSet.valueOf(payload);
+    //                         peerBitfields.put(PeerID, receivedbitField);
                             
 
-                            if(isInterestedInPeer(PeerID)){
-                                sendInterestedMessage();
-                            }
-                            else{
-                                sendNotInterestedMessage();
-                            }
-                            break;
-                  //  receivedbitField = BitSet.valueOf(decodedMessage.getPayload());
-                    //System.out.println("this is the length: " + receivedbitField.length());
-                    // for(int i = 0; i < receivedbitField.length(); i++){
-                    //     if(receivedbitField.get(i) && !currPeer.getbitField().get(i)){
-                    //       //  System.out.println("found at value" + i);
-                    //        // System.out.println("buffer groverflow");
-                    //         requestMessage(i);
-                    //         break;
+    //                         if(isInterestedInPeer(PeerID)){
+    //                             sendInterestedMessage();
+    //                         }
+    //                         else{
+    //                             sendNotInterestedMessage();
+    //                         }
+    //                         break;
+    //               //  receivedbitField = BitSet.valueOf(decodedMessage.getPayload());
+    //                 //System.out.println("this is the length: " + receivedbitField.length());
+    //                 // for(int i = 0; i < receivedbitField.length(); i++){
+    //                 //     if(receivedbitField.get(i) && !currPeer.getbitField().get(i)){
+    //                 //       //  System.out.println("found at value" + i);
+    //                 //        // System.out.println("buffer groverflow");
+    //                 //         requestMessage(i);
+    //                 //         break;
 
-                    //     }
+    //                 //     }
     
-                    // }
-                    //break;
-                    case PIECE:
-                      //  System.out.println("I MADE IT TO PIECE");
-                        payload = decodedMessage.getPayload();
-                        ByteBuffer buffer = ByteBuffer.wrap(payload);
-                        int offset = buffer.getInt(); // Extract the offset from the first 4 bytes
-                        int fileOffset = offset * configInfo.getpieceSize();
-                        System.arraycopy(payload, 4, fileData, fileOffset, configInfo.getpieceSize()); 
-                        fileWrite.seek(fileOffset);
-                        fileWrite.write(payload, 4, configInfo.getpieceSize());
-                        currPeer.getbitField().set(offset);
-                         for(int i = 0; i < receivedbitField.length(); i++){
-                             if(receivedbitField.get(i) && !currPeer.getbitField().get(i)){
-                                 System.out.println("requested new at " + i);
-                                System.out.println("buffer groverflow");
-                                 requestMessage(i);
-                                 break;
+    //                 // }
+    //                 //break;
+    //                 case PIECE:
+    //                   //  System.out.println("I MADE IT TO PIECE");
+    //                     payload = decodedMessage.getPayload();
+    //                     ByteBuffer buffer = ByteBuffer.wrap(payload);
+    //                     int offset = buffer.getInt(); // Extract the offset from the first 4 bytes
+    //                     int fileOffset = offset * configInfo.getpieceSize();
+    //                     System.arraycopy(payload, 4, fileData, fileOffset, configInfo.getpieceSize()); 
+    //                     fileWrite.seek(fileOffset);
+    //                     fileWrite.write(payload, 4, configInfo.getpieceSize());
+    //                     currPeer.getbitField().set(offset);
+    //                      for(int i = 0; i < receivedbitField.length(); i++){
+    //                          if(receivedbitField.get(i) && !currPeer.getbitField().get(i)){
+    //                              System.out.println("requested new at " + i);
+    //                             System.out.println("buffer groverflow");
+    //                              requestMessage(i);
+    //                              break;
     
-                             }
+    //                          }
         
-                         }
-                        downloadRate++;
+    //                      }
+    //                     downloadRate++;
                         
                         
-                        //int filewritePosition = 
-                      //  System.out.println(fileData.length);
-                       // fileWrite.seek()
+    //                     //int filewritePosition = 
+    //                   //  System.out.println(fileData.length);
+    //                    // fileWrite.seek()
 
 
                     
-                  // System.arraycopy(decodedMessage.getPayload(), offset, requestedPiece, 0, configInfo.getpieceSize());
+    //               // System.arraycopy(decodedMessage.getPayload(), offset, requestedPiece, 0, configInfo.getpieceSize());
                     
 
 
-                }
-                // System.out.println(decodedMessage.getType());
-                // byte[] imageMaybe = decodedMessage.getPayload();
-                //   String tempPath = "peer_1002/test.jpg";
-                //      FileOutputStream fileOutputStream = new FileOutputStream(tempPath);
-                //     fileOutputStream.write(decodedMessage.getPayload());
-                //      fileOutputStream.close();
-                //      System.out.println("do i make it here");
+    //             }
+    //             // System.out.println(decodedMessage.getType());
+    //             // byte[] imageMaybe = decodedMessage.getPayload();
+    //             //   String tempPath = "peer_1002/test.jpg";
+    //             //      FileOutputStream fileOutputStream = new FileOutputStream(tempPath);
+    //             //     fileOutputStream.write(decodedMessage.getPayload());
+    //             //      fileOutputStream.close();
+    //             //      System.out.println("do i make it here");
 
                 
 
@@ -1158,93 +1156,93 @@ public class peerProcess {
 
 					
                    
-                    //TEST FOR SENDING IMAGE, WORKING 
-                    // byte[] test = (byte[]) in.readObject();
-                     //System.arraycopy(test, 0, fileData, 16384);
-                    //fileData = 
-                    // out.writeObject(test);
-                    // String tempPath = "peer_1002/test.jpg";
-                    // FileOutputStream fileOutputStream = new FileOutputStream(tempPath);
-                    // fileOutputStream.write(test);
-                    // fileOutputStream.close();
+    //                 //TEST FOR SENDING IMAGE, WORKING 
+    //                 // byte[] test = (byte[]) in.readObject();
+    //                  //System.arraycopy(test, 0, fileData, 16384);
+    //                 //fileData = 
+    //                 // out.writeObject(test);
+    //                 // String tempPath = "peer_1002/test.jpg";
+    //                 // FileOutputStream fileOutputStream = new FileOutputStream(tempPath);
+    //                 // fileOutputStream.write(test);
+    //                 // fileOutputStream.close();
 
                     
-				}
+	// 			}
 			
-            } finally {
-                in.close();
-                out.close();
-                connection.close();
-                System.out.println("Disconnect with Client" + PeerID);
-            }
-        }
-            catch(ClassNotFoundException classnot)
-            {
-					System.err.println("Data received in unknown format");
-				}
-                catch (IOException e) {
-                    // TODO Auto-generated catch block
-                 //   e.printStackTrace();
-                }
+    //         } finally {
+    //             in.close();
+    //             out.close();
+    //             connection.close();
+    //             System.out.println("Disconnect with Client" + PeerID);
+    //         }
+    //     }
+    //         catch(ClassNotFoundException classnot)
+    //         {
+	// 				System.err.println("Data received in unknown format");
+	// 			}
+    //             catch (IOException e) {
+    //                 // TODO Auto-generated catch block
+    //              //   e.printStackTrace();
+    //             }
             
           
-            } 
-            public  void sendMessage(byte[] msg)
-            {
-                try
-                {
-                    out.writeObject(msg);
-                    out.flush();
-                   // System.out.println("Send message: " + msg + " to Client " + no);
-                }
-                catch(IOException ioException)
-                {
-                    ioException.printStackTrace();
-                }
-            }
+    //         } 
+    //         public  void sendMessage(byte[] msg)
+    //         {
+    //             try
+    //             {
+    //                 out.writeObject(msg);
+    //                 out.flush();
+    //                // System.out.println("Send message: " + msg + " to Client " + no);
+    //             }
+    //             catch(IOException ioException)
+    //             {
+    //                 ioException.printStackTrace();
+    //             }
+    //         }
 
-            public  void requestMessage(int i ){
-                ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
-                buffer.putInt(i);
-                byte[] payload = buffer.array();
-                Message message = new Message(MessageType.REQUEST, payload);
-                byte[] toSend = message.encode();
-                sendMessage(toSend);
+    //         public  void requestMessage(int i ){
+    //             ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
+    //             buffer.putInt(i);
+    //             byte[] payload = buffer.array();
+    //             Message message = new Message(MessageType.REQUEST, payload);
+    //             byte[] toSend = message.encode();
+    //             sendMessage(toSend);
             
-             }
-             public boolean isInterestedInPeer(int peerId) {
-                BitSet theirBitfield = peerBitfields.get(peerId);
-                BitSet ourBitfield = currPeer.getbitField();  
-                BitSet interestSet = (BitSet) theirBitfield.clone();
-                interestSet.andNot(ourBitfield);
-                return !interestSet.isEmpty();
-            }
+    //          }
+    //          public boolean isInterestedInPeer(int peerId) {
+    //             BitSet theirBitfield = peerBitfields.get(peerId);
+    //             BitSet ourBitfield = currPeer.getbitField();  
+    //             BitSet interestSet = (BitSet) theirBitfield.clone();
+    //             interestSet.andNot(ourBitfield);
+    //             return !interestSet.isEmpty();
+    //         }
 
-               public  void pieceMessage(int i, byte[] pieceRequested ){
-                ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES + configInfo.getpieceSize());
-                buffer.putInt(i);
-                byte[] payload = buffer.array();
-                Message message = new Message(MessageType.REQUEST, payload);
-                byte[] toSend = message.encode();
-                sendMessage(toSend);
+    //            public  void pieceMessage(int i, byte[] pieceRequested ){
+    //             ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES + configInfo.getpieceSize());
+    //             buffer.putInt(i);
+    //             byte[] payload = buffer.array();
+    //             Message message = new Message(MessageType.REQUEST, payload);
+    //             byte[] toSend = message.encode();
+    //             sendMessage(toSend);
             
-             }
-             public  void sendInterestedMessage(){
-                byte[] dummy = new byte[20];
-                Message message = new Message(MessageType.INTERESTED,dummy);
-                byte[] encodedMessage = message.encode();
-                System.out.println("message sent!");
-                sendMessage(encodedMessage);
+    //          }
+    //          public  void sendInterestedMessage(){
+    //             byte[] dummy = new byte[20];
+    //             Message message = new Message(MessageType.INTERESTED,dummy);
+    //             byte[] encodedMessage = message.encode();
+    //             System.out.println("message sent!");
+    //             sendMessage(encodedMessage);
 
-             } public  void sendNotInterestedMessage(){
-                Message message = new Message(MessageType.NOT_INTERESTED,null);
-                byte[] encodedMessage = message.encode();
-                sendMessage(encodedMessage);
+    //          } public  void sendNotInterestedMessage(){
+    //             Message message = new Message(MessageType.NOT_INTERESTED,null);
+    //             byte[] encodedMessage = message.encode();
+    //             sendMessage(encodedMessage);
 
-             }
+    //          }
              
 
-         }
+    //      }
    
 
        
@@ -1264,7 +1262,6 @@ public class peerProcess {
                 FileInputStream in = new FileInputStream(sendFile);
                 fileData = new byte[(int) sendFile.length()];
                 if(fileData.length == sendFile.length()){
-                    System.out.println("im supposed to be here");
 
                 }
                 in.read(fileData);

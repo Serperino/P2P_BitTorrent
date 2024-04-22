@@ -20,7 +20,7 @@ public class logWriter {
     public synchronized void logConnection(int hostPeer, int clientPeer){
         String message = String.format("[%s]: Peer " + clientPeer + " makes a connection to Peer " + hostPeer, getcurrentTime());
         writeLog(message);
-        System.out.println("file written successfully!");
+      //  System.out.println("file written successfully!");
 
 
     }

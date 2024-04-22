@@ -55,11 +55,11 @@ public class fileLoader {
                 {
                     case "NumberOfPreferredNeighbors":
                         this.numNeighbors = Integer.parseInt(value);
-                        System.out.println("this is num nieghbors" + this.numNeighbors);
+                       // System.out.println("this is num nieghbors" + this.numNeighbors);
                         break;
                     case "UnchokingInterval":
                         this.unchokeInterval = Integer.parseInt(value);
-                        System.out.println("this is unchokje interval" + this.unchokeInterval);
+                      //  System.out.println("this is unchoke interval" + this.unchokeInterval);
 
                         break;
                     case "OptimisticUnchokingInterval":
@@ -93,7 +93,7 @@ public class fileLoader {
         int pieceNumber = (fileSize/pieceSize);
          totalPieces = (int) Math.ceil((double) fileSize/pieceSize);
         
-        System.out.println("these are the totalpieces: " + totalPieces);
+        //System.out.println("these are the totalpieces: " + totalPieces);
 
         }
 
@@ -116,7 +116,7 @@ public class fileLoader {
                         String hostName = parts[1];
                         int port = Integer.parseInt(parts[2]);
                         int hasFile = Integer.parseInt(parts[3]);
-                        System.out.println("The port for" + peerID + "is" + port);
+                       // System.out.println("The port for" + peerID + "is" + port);
                         this.peersinNetwork.put(peerID, new Peer(peerID, hostName, port, hasFile, totalPieces));
 
                     }
