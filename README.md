@@ -8,6 +8,7 @@
   * End behavior
   * Log writing
   * Data representation (BitSets, Byte[])
+  * Video recording
 * Jiawei Weng
   * Handshake creation
   * Message creation/sending, encoding/decoding
@@ -22,6 +23,9 @@ run "javac peerProcess.java"
 Make sure a PeerInfo.cfg and Common.cfg are present for specifying peer and file information
 Have folders present for you to access files, i.e. if you specify peer 1001 has a file, make a folder called peer_1001 with the file in it
 run "java peerProcess 'peerID'" where number would be any peer ID you listed in PeerInfo.cfg, ex java peerProcess 1001
+
+#VIDEO SHOWCASE
+https://youtu.be/RI3Npigcjmo?si=D66cuT8cK7DG2UUS
 
 NOTES:
  * Make sure you start with the first peerID first and go in order or else the sockets will not work properly
