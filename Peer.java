@@ -16,7 +16,7 @@ public class Peer {
     private ServerSocket serverSocket;
     private ObjectOutputStream output;
     private ObjectInputStream input;
-    private Server server;
+   // private Server server;
     private Thread listenThread;
     //public byte[] bitField;
     static public BitSet bitField;
@@ -67,10 +67,6 @@ public class Peer {
         this.listenThread = thread;
     }
 
-    public Server getServer(){
-        return server;
-    }
-
     public int getpeerID()
     {
         return peerID;
@@ -110,10 +106,7 @@ public class Peer {
         this.serverSocket = socket;
     }
 
-    public void  setServer(Server server)
-    {
-        this.server = server;
-    }
+  
 
     public BitSet getbitField()
     {

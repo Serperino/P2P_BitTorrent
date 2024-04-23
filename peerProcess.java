@@ -132,7 +132,7 @@ public class peerProcess {
             //requestSocket = new Socket("localhost", peerID);
          //   System.out.println(address);
            // System.out.println("port number:" + workingPeer.getportNumber());
-            requestSocket = new Socket(address, workingPeer.getportNumber());
+            requestSocket = new Socket("localhost", workingPeer.getportNumber());
           //  System.out.println("socket at" + workingPeer.getportNumber());
             new Handler(requestSocket, workingPeer.getportNumber()).start();
             System.out.println("Connected to " + peerID);
@@ -249,6 +249,7 @@ public class peerProcess {
         boolean hasFile;
         int iterations = 0;
         int total = 0;
+        static int  messagesReceived = 0;
         static boolean filestoExchange = true;
         Timer optTimer = new Timer();
         static int peersDone = 0;
@@ -336,11 +337,15 @@ public class peerProcess {
 
                 //FOR CALCULATING PEERS
                  if(timerRunning == false){
+                  
                      timerRunning = true;
                     Timer timer = new Timer();
                     timer.scheduleAtFixedRate(new TimerTask() {
                         @Override
                         public void run() {
+                            
+                          
+                           
                             
                             for (Map.Entry<Integer, BitSet> entry : peerBitfields.entrySet()) {
                                 int id = entry.getKey(); // Get the ID
@@ -366,7 +371,7 @@ public class peerProcess {
                         }
                     
                               
-                    if(everyonehasEverything == true && iterations == 2 || downloadsatZero >= 3 && hasFile){
+                    if(everyonehasEverything == true && iterations == 2 || downloadsatZero >= 5 && hasFile){
                         try {
                             System.out.println("All users have all files, Disconnecting...");
                             sleep(8000);
@@ -469,7 +474,7 @@ public class peerProcess {
                             
                          
                         
-                                totalDownloads = 0;
+                               // totalDownloads = 0;
                             for (Map.Entry<Integer, Integer> entry : downloadRates.entrySet()) {
                                 int peerId = entry.getKey();
                                 int rate = entry.getValue();
@@ -480,8 +485,8 @@ public class peerProcess {
                                 
                             }
                             if(totalDownloads == 0){
+                                System.out.println("yay");
                                 downloadsatZero += 1;
-                              //  System.out.println(downloadsatZero);
                             }
                             else{
                                 downloadsatZero = 0;
@@ -492,6 +497,7 @@ public class peerProcess {
                                 entry.setValue(0);
 
                             }
+
     
     
     
@@ -500,17 +506,22 @@ public class peerProcess {
                     }, 0, configInfo.getunchokeInterval() * 1000);
 
 
-                 
+                    
                     optTimer.scheduleAtFixedRate(new TimerTask() {
                         @Override
                         public void run() {
+                         
+                           
                             boolean foundPeer = false;
-                            for (Integer peers : interestedPeers) {
-                                if (!chosenforDownload.contains(peers)) {
-                                    tobeoptimisticallyUnchoked.add(peers);
-                                    foundPeer = true;
+                            if(!interestedPeers.isEmpty()){
+                                for (Integer peers : interestedPeers) {
+                                    if (!chosenforDownload.contains(peers)) {
+                                        tobeoptimisticallyUnchoked.add(peers);
+                                        foundPeer = true;
+                                    }
                                 }
                             }
+                         
                             if(foundPeer){
                                 Random optunchoke = new Random();
                                 int randomIndex = optunchoke.nextInt(tobeoptimisticallyUnchoked.size());
@@ -543,6 +554,20 @@ public class peerProcess {
                 sendChoke.scheduleAtFixedRate(new TimerTask() {
                     @Override
                     public void run() {
+                //         Message message = new Message(MessageType.BITFIELD, currPeer.getbitField().toByteArray());
+                // byte[] toSend = message.encode();
+                // try {
+                //     out.writeObject(toSend);
+                // } catch (IOException e) {
+                //     // TODO Auto-generated catch block
+                //     e.printStackTrace();
+                // }
+                // try {
+                //     out.flush();
+                // } catch (IOException e) {
+                //     // TODO Auto-generated catch block
+                //     e.printStackTrace();
+                // } 
                        
                         
                     
@@ -585,9 +610,34 @@ public class peerProcess {
                
                 
                
+                Timer updateInfo = new Timer();
+                updateInfo.scheduleAtFixedRate(new TimerTask(){
+                    @Override
+                    public void run(){
+                        Message updateMessage = new Message(MessageType.BITFIELD, currPeer.getbitField().toByteArray());
+                        byte[] update = updateMessage.encode();
+                        try {
+                            System.out.println("sending shit to " + PeerID);
+                           out.writeObject(update);
+                       } catch (IOException e) {
+                           // TODO Auto-generated catch block
+                         //  e.printStackTrace();
+                       }
+                        try {
+                           out.flush();
+                       } catch (IOException e) {
+                           // TODO Auto-generated catch block
+                         // e.printStackTrace();
+                       }
 
+                }
+            },0,5000);
+               
+
+                
 				while(filestoExchange)
 				{
+                   
                   
 
 
@@ -600,7 +650,11 @@ public class peerProcess {
                 Message decodedMessage = Message.decode(incomingMessage); // Create an instance and then call decode
                 payload=decodedMessage.getPayload();
                //System.out.println(decodedMessage.getType());
-
+             //  System.out.println(messagesReceived + "messages received");
+               
+               if(messagesReceived == 10){
+               
+            }
                     switch(decodedMessage.getType()){
                         case CHOKE:
                         peerLog.logChoke(PeerID);
@@ -628,21 +682,26 @@ public class peerProcess {
         
 
                          }
-                         Random random = new Random();
-                         //int randomunchokeIndex = random.nextInt(unchokeavailablePieces.size());
-                         int randomunchokeIndex = random.nextInt(unchokeavailablePieces.size());
-                        // System.out.println("THE RANDOM UNCHOKE INDEX" + randomunchokeIndex);
-                         int randomPiece = unchokeavailablePieces.get(randomunchokeIndex);
-                        //  System.out.println("requested new at " + randomunchokeIndex);
-                          //System.out.println("buffer groverflow");
-                        //  System.out.println("sending request message:");
-                          requestMessage(randomPiece);
-                          downloadRate++;
-                          break;
+                         if(!unchokeavailablePieces.isEmpty()){
+                            Random random = new Random();
+                            //int randomunchokeIndex = random.nextInt(unchokeavailablePieces.size());
+                            int randomunchokeIndex = random.nextInt(unchokeavailablePieces.size());
+                           // System.out.println("THE RANDOM UNCHOKE INDEX" + randomunchokeIndex);
+                            int randomPiece = unchokeavailablePieces.get(randomunchokeIndex);
+                           //  System.out.println("requested new at " + randomunchokeIndex);
+                             //System.out.println("buffer groverflow");
+                           //  System.out.println("sending request message:");
+                             requestMessage(randomPiece);
+                             downloadRate++;
+                             break;
+                         }
+                      
                         }
                         break;
                     }
                         case INTERESTED:
+                        messagesReceived++;
+
                         updateInterestStatus(PeerID, true);
                         peerLog.logInterested(PeerID);
                         interestShown = true;
@@ -650,16 +709,21 @@ public class peerProcess {
                         break;
                     
                         case NOT_INTERESTED:
+                        messagesReceived++;
+
                         peerLog.lognotInterested(PeerID);
                         updateInterestStatus(PeerID, false);
                         System.out.println(PeerID + " is NOT interested ");
                         break;
                         
                         case BITFIELD:
-                        //System.out.println("get bitfiled msg");
+                        System.out.println("get bitfiled msg");
+                        messagesReceived++;
 
                         receivedbitField = BitSet.valueOf(decodedMessage.getPayload());
+                        //System.out.println("new bitfield!" + receivedbitField);
                         peerBitfields.put(PeerID, receivedbitField);
+                        System.out.println("is this another peer sometimes" + PeerID);
                         //System.out.println("RECEIVED BITFIELD IN BITFIELD" + receivedbitField);
                         //System.out.println("RECEIVED VARIABLE AFTER IN BITFIELD" + bitfield);
 
@@ -705,6 +769,8 @@ public class peerProcess {
                            
                         //}
                         peerLog.logHave(PeerID, pieceOffset);
+                        messagesReceived++;
+
                         break;
 
                         case REQUEST:
@@ -723,6 +789,8 @@ public class peerProcess {
 
                             pieceMessage(index, requestedPiece);
                             downloadRates.put(PeerID, downloadRate++);
+                            messagesReceived++;
+
                             break;
                         }
                         
@@ -817,6 +885,8 @@ public class peerProcess {
                                  downloadRate++;
                                  total++;
                                  //System.out.println("current total:" + total);
+                                 messagesReceived++;
+
                                  break;
  
                                }
@@ -826,6 +896,7 @@ public class peerProcess {
                                 sendNotInterestedMessage();
                                }
                            
+                               messagesReceived++;
 
 
                 
@@ -850,16 +921,16 @@ public class peerProcess {
            finally
             {
               //Close connections
-			try
-            {
-				in.close();
-				out.close();
-				connection.close();
-			}
-			catch(IOException ioException)
+			//try
+           // {
+				//in.close();
+				//out.close();
+				//connection.close();
+			//}
+			//catch(IOException ioException)
            {
                 
-				System.out.println("Disconnect with Client " + no);
+				//System.out.println("Disconnect with Client " + no);
 			}
         }
 			
@@ -1254,7 +1325,7 @@ public class peerProcess {
             try {
                 File folder = new File(folderName);
                 File[] allFiles = folder.listFiles();
-                File sendFile = allFiles[1];
+                File sendFile = allFiles[0];
                // System.out.println("Getting the name:" + sendFile.getName());
                 if (sendFile == null) {
                     System.out.println("File not found.");
