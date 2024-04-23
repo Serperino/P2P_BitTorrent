@@ -24,7 +24,7 @@ Make sure a PeerInfo.cfg and Common.cfg are present for specifying peer and file
 Have folders present for you to access files, i.e. if you specify peer 1001 has a file, make a folder called peer_1001 with the file in it
 run "java peerProcess 'peerID'" where number would be any peer ID you listed in PeerInfo.cfg, ex java peerProcess 1001
 
-#VIDEO SHOWCASE
+# VIDEO SHOWCASE
 https://youtu.be/RI3Npigcjmo?si=D66cuT8cK7DG2UUS
 
 NOTES:
