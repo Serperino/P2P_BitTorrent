@@ -19,10 +19,10 @@
 
 # HOW TO RUN/NOTES OF THIS BUILD
 1. Download zip file and extract
-2. run "javac peerProcess.java"
+2. Run "javac peerProcess.java"
 3. Make sure a PeerInfo.cfg and Common.cfg are present for specifying peer and file information, an example is provided.
 4. Have folders present for you to access files, i.e. if you specify peer 1001 has a file, make a folder called peer_1001 with the file in it. An example with a file is provided.
-5. run "java peerProcess 'peerID'" where number would be any peer ID you listed in PeerInfo.cfg, ex java peerProcess 1001
+5. Run "java peerProcess 'peerID'" where number would be any peer ID you listed in PeerInfo.cfg, ex java peerProcess 1001
 
 # VIDEO SHOWCASE
 https://youtu.be/RI3Npigcjmo?si=D66cuT8cK7DG2UUS
