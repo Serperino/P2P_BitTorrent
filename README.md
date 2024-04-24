@@ -34,21 +34,35 @@ https://youtu.be/RI3Npigcjmo?si=D66cuT8cK7DG2UUS
 
 | peerProcess.java            | Description                                       
 |---------------------|---------------------------------------------------|
-| beginListening          | Starts server and listens for peers joining             | 
+| beginListening()          | Starts server and listens for peers joining             | 
 | beginSearch() | Searches for ports to connect to based on PeerInfo.cfg |
-| sendHandshake | Encodes message and sends handshake msg|
-| sendUnchoke | Creates a dummy byte[], encodes message and sends unchoke message | 
-| sendChoke | Creates a dummy byte[], encodes message and sends choke message | 
-| updateInterestStatus         | Updates interest status of selectPeer in peerInterestStatus Map           | 
-| isPeerLiked           | Returns if a peer is liked               | 
-| sendInterestedMessage          | Creates dummy byte[], encodes message and sends interested message    |
-| sendNotInterestedMessage          |Creates dummy byte[], encodes message and sends not interested message         | 
-| sendhaveMessage          | Creates a byte[] and message with an offset value to be sent          |
-| isInterestedInPeer                | Returns if interested in peer based on their BitSet                       |
-| requestMessage          | Creates a byte[] and message with an int that represents a particular piece it wants from a peer        |
-| pieceMessage     | Creates[] and message containing a piece        |
-| selectPreferredNeighbors      |Selects preferred neighbors based on if peers are liked. | 
-| loadFile     | Loads file specified in configInfo and peerInfo         |
+| sendHandshake() | Encodes message and sends handshake msg|
+| sendUnchoke() | Creates a dummy byte[], encodes message and sends unchoke message | 
+| sendChoke() | Creates a dummy byte[], encodes message and sends choke message | 
+| updateInterestStatus()         | Updates interest status of selectPeer in peerInterestStatus Map           | 
+| isPeerLiked()           | Returns if a peer is liked               | 
+| sendInterestedMessage()          | Creates dummy byte[], encodes message and sends interested message    |
+| sendNotInterestedMessage()          |Creates dummy byte[], encodes message and sends not interested message         | 
+| sendhaveMessage()          | Creates a byte[] and message with an offset value to be sent          |
+| isInterestedInPeer()                | Returns if interested in peer based on their BitSet                       |
+| requestMessage()          | Creates a byte[] and message with an int that represents a particular piece it wants from a peer        |
+| pieceMessage()     | Creates[] and message containing a piece        |
+| selectPreferredNeighbors()      |Selects preferred neighbors based on if peers are liked. | 
+| loadFile()     | Loads file specified in configInfo and peerInfo         |
+
+
+| fileLoader.java          | Description                                       
+|---------------------|---------------------------------------------------|
+| loadCommon()          | Loads and stores information from common.cfg file            | 
+| loadpeerInfo() | Loads and stores information from PeerInfo.cfg|
+
+
+
+| Message.java     | Description                                       
+|---------------------|---------------------------------------------------|
+| encode()      | Places information into byte array containing the Type of message and the payload      | 
+| decode() | Extracts TYPE message and payload from am encoded message|
+
 
 
 
