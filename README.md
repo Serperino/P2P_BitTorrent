@@ -31,6 +31,8 @@ NOTES:
 # VIDEO SHOWCASE
 https://youtu.be/RI3Npigcjmo?si=D66cuT8cK7DG2UUS
 
+#IMPORTANT FUNCTIONS
+
 
 | peerProcess.java            | Description                                       
 |---------------------|---------------------------------------------------|
@@ -62,6 +64,13 @@ https://youtu.be/RI3Npigcjmo?si=D66cuT8cK7DG2UUS
 |---------------------|---------------------------------------------------|
 | encode()      | Places information into byte array containing the Type of message and the payload      | 
 | decode() | Extracts TYPE message and payload from am encoded message|
+
+
+| handShake.java     | Description                                       
+|---------------------|---------------------------------------------------|
+| encode()      | Places information into byte array factoring in ZERO_BITS_LENGTH and peer ID of the sender     | 
+| decode() | Extrcts handshake payload, check if its valid, and if it is, communicates with the peer|
+
 
 
 
