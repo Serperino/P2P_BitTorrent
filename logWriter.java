@@ -20,6 +20,8 @@ public class logWriter {
     public synchronized void logConnection(int hostPeer, int clientPeer){
         String message = String.format("[%s]: Peer " + clientPeer + " makes a connection to Peer " + hostPeer, getcurrentTime());
         writeLog(message);
+        System.out.println(message);
+
       //  System.out.println("file written successfully!");
 
 
@@ -34,43 +36,59 @@ public class logWriter {
         neighborList += preferredNeighbors.get(i).toString();
     }
         String logMessage = String.format("[%s]: Peer " +  peerID + " has the preferred neighbors" + neighborList, getcurrentTime());
+        System.out.println(logMessage);
         writeLog(logMessage);
     }
 
     public void logUnchoke(int neighborID) {
         String logMessage = String.format("[%s]: Peer " + peerID +  " is unchoked by " + neighborID, getcurrentTime());
+        System.out.println(logMessage);
+        writeLog(logMessage);
+    }
+
+    public void handShake(int neighborID) {
+        String logMessage = String.format("[%s]: Peer " + peerID +  " has received a handshake from " + neighborID, getcurrentTime());
+        System.out.println(logMessage);
         writeLog(logMessage);
     }
 
 
+
     public void logoptimisticUnchoke(int neighborID) {
         String logMessage = String.format("[%s]: Peer " + peerID +  " has the optimistically unchoked neighbor " + neighborID, getcurrentTime());
+       System.out.println(logMessage);
         writeLog(logMessage);
     }
 
     public void logChoke(int neighborID) {
         String logMessage = String.format("[%s]: Peer " + peerID +  " is choked by  " + neighborID, getcurrentTime());
+        System.out.println(logMessage);
         writeLog(logMessage);
     }
     public void logHave(int neighborID, int pieceIndex) {
         String logMessage = String.format("[%s]: Peer " + peerID +  " received the 'have' message from " + neighborID + " for the piece " + pieceIndex, getcurrentTime());
+        System.out.println(logMessage);
         writeLog(logMessage);
     }
 
     public void logInterested(int interestedPeer) {
         String logMessage = String.format("[%s]: Peer " + peerID + " received the 'interested' message from " + interestedPeer, getcurrentTime());
+        System.out.println(logMessage);
         writeLog(logMessage);
     }
     public void lognotInterested(int notinterestedPeer) {
         String logMessage = String.format("[%s]: Peer " + peerID + " received the 'not interested' message from " + notinterestedPeer, getcurrentTime());
+        System.out.println(logMessage);
         writeLog(logMessage);
     }
     public void logDownload(int neighborID, int pieceIndex, int numPieces) {
         String logMessage = String.format("[%s]: Peer " + peerID +  " has downloaded the piece " + pieceIndex + " from " + neighborID + "." + " Now the number of pieces it has is " + numPieces, getcurrentTime());
+       System.out.println(logMessage);
         writeLog(logMessage);
     }
     public void logFinished(){
         String logMessage = String.format("[%s]: Peer " + peerID +  " has downloaded the complete file. ", getcurrentTime());
+        System.out.println(logMessage);
         writeLog(logMessage);
 
     }

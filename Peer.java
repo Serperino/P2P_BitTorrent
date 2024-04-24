@@ -16,7 +16,7 @@ public class Peer {
     private ServerSocket serverSocket;
     private ObjectOutputStream output;
     private ObjectInputStream input;
-   // private Server server;
+ //  private Server server;
     private Thread listenThread;
     //public byte[] bitField;
     static public BitSet bitField;
@@ -43,8 +43,6 @@ public class Peer {
         this.hostName = hostName;
         this.port = port;
         this.hasFile = hasFile;
-        System.out.println("this is in the peer constructor");
-        System.out.println(totalPieces);
         this.bitField = new BitSet(totalPieces);
         if(hasFile == 1){
 
@@ -66,6 +64,10 @@ public class Peer {
     {
         this.listenThread = thread;
     }
+
+    // public Server getServer(){
+    //     return server;
+    // }
 
     public int getpeerID()
     {
@@ -106,7 +108,10 @@ public class Peer {
         this.serverSocket = socket;
     }
 
-  
+    // public void  setServer(Server server)
+    // {
+    //     this.server = server;
+    // }
 
     public BitSet getbitField()
     {
