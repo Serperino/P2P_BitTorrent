@@ -31,7 +31,7 @@ NOTES:
 # VIDEO SHOWCASE
 https://youtu.be/RI3Npigcjmo?si=D66cuT8cK7DG2UUS
 
-#IMPORTANT FUNCTIONS
+# IMPORTANT FUNCTIONALITY
 
 
 | peerProcess.java            | Description                                       
